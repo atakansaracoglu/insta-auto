@@ -617,10 +617,21 @@ export async function POST(request: NextRequest) {
                       if (user.groq_auto_reply_enabled && triggerType !== "postback") {
                         console.log(`[webhook] 🤖 No rule match — trying AI auto-reply for DM from ${senderId}`)
                         await sendSenderAction(user.access_token, senderId, "mark_seen")
-                        const aiReply = await generateAIReply(triggerValue, user.ai_context || "", user.groq_api_key, user.ai_base_url, user.ai_model)
+                        const { data: recentMessages } = conv
+                          ? await supabase
+                              .from("messages")
+                              .select("content, is_from_instagram")
+                              .eq("conversation_id", conv.id)
+                              .order("created_at", { ascending: false })
+                              .limit(10)
+                          : { data: [] }
+                        const history = (recentMessages || []).reverse().map((message: any) => ({
+                          role: message.is_from_instagram ? "user" as const : "assistant" as const,
+                          content: message.content,
+                        }))
+                        const aiReply = await generateAIReply(triggerValue, user.ai_context || "", history, user.groq_api_key, user.ai_base_url, user.ai_model)
                         if (aiReply) {
                           await sendSenderAction(user.access_token, senderId, "typing_on")
-                          await sleep(1200)
                           const result = await sendTextDM(user.access_token, { id: senderId }, aiReply)
                           if (result?.ok && conv) {
                             try {
