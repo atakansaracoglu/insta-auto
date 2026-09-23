@@ -218,7 +218,7 @@ export async function POST(request: NextRequest) {
       let { data: user } = await supabase
         .from("users")
         .select("*")
-        .or(`business_account_id.eq.${webhookId},page_id.eq.${webhookId}`)
+        .or(`business_account_id.eq.${webhookId},page_id.eq.${webhookId},id.eq.${webhookId}`)
         .single()
 
       if (!user) {
