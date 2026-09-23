@@ -62,22 +62,28 @@ export async function GET(request: NextRequest) {
 
                 const since = new Date(Date.now() - 30 * 86400000).toISOString().split("T")[0]
                 const until = new Date().toISOString().split("T")[0]
-                const insightsRes = await fetch(
-                    `https://graph.instagram.com/v24.0/me/insights?metric=reach,views,profile_views,accounts_engaged,total_interactions,likes,comments,shares,saves,follows_and_unfollows&period=day&since=${since}&until=${until}&access_token=${user.access_token}`,
-                    { cache: "no-store" }
+                const base = `https://graph.instagram.com/v24.0/me/insights`
+                const qs = `period=day&since=${since}&until=${until}&access_token=${user.access_token}`
+                const metricGroups = [
+                    "reach,profile_views,accounts_engaged",
+                    "views,total_interactions,follows_and_unfollows",
+                    "likes,comments,shares,saves",
+                ]
+                const responses = await Promise.all(
+                    metricGroups.map(m => fetch(`${base}?metric=${m}&${qs}`, { cache: "no-store" }))
                 )
-                if (insightsRes.ok) {
-                    const insightsData = await insightsRes.json()
-                    if (insightsData.data) {
-                        igInsights = {} as Record<string, number>
-                        for (const m of insightsData.data) {
+                igInsights = {} as Record<string, number>
+                for (const res of responses) {
+                    if (res.ok) {
+                        const d = await res.json()
+                        for (const m of d.data ?? []) {
                             igInsights[m.name] = (m.values ?? []).reduce((sum: number, v: any) => sum + (v.value ?? 0), 0)
                         }
+                    } else {
+                        console.error("[v0] Insights batch error:", res.status, await res.text())
                     }
-                } else {
-                    const errBody = await insightsRes.text()
-                    console.error("[v0] Insights API error:", insightsRes.status, errBody)
                 }
+                if (Object.keys(igInsights).length === 0) igInsights = null
             } catch (e) {
                 console.error("[v0] IG fetch error:", e)
             }
