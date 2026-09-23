@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
             try {
                 const igRes = await fetch(
                     `https://graph.instagram.com/v24.0/me?fields=username,followers_count,follows_count,media_count,profile_picture_url,biography,name&access_token=${user.access_token}`,
-                    { next: { revalidate: 300 } }
+                    { cache: "no-store" }
                 )
                 if (igRes.ok) igProfile = await igRes.json()
             } catch {}
