@@ -73,22 +73,22 @@ export async function GET(request: NextRequest) {
                     metricGroups.map(m => fetch(`${base}?metric=${m}&${qs}`, { cache: "no-store" }))
                 )
                 igInsights = {} as Record<string, number>
-                const debugErrors: string[] = []
+                const debugInfo: string[] = []
                 for (let i = 0; i < responses.length; i++) {
                     const res = responses[i]
+                    const body = await res.text()
+                    debugInfo.push(`g${i}[${metricGroups[i]}] s=${res.status} body=${body.slice(0, 300)}`)
                     if (res.ok) {
-                        const d = await res.json()
-                        for (const m of d.data ?? []) {
-                            igInsights[m.name] = (m.values ?? []).reduce((sum: number, v: any) => sum + (v.value ?? 0), 0)
-                        }
-                    } else {
-                        const errBody = await res.text()
-                        debugErrors.push(`group${i}(${metricGroups[i]}): ${res.status} ${errBody.slice(0, 200)}`)
-                        console.error(`[v0] Insights batch ${i} error:`, res.status, errBody)
+                        try {
+                            const d = JSON.parse(body)
+                            for (const m of d.data ?? []) {
+                                igInsights[m.name] = (m.values ?? []).reduce((sum: number, v: any) => sum + (v.value ?? 0), 0)
+                            }
+                        } catch {}
                     }
                 }
-                if (debugErrors.length > 0) (igInsights as any)._errors = debugErrors
-                if (Object.keys(igInsights).filter(k => k !== "_errors").length === 0) igInsights = null
+                (igInsights as any)._debug = debugInfo
+                if (Object.keys(igInsights).filter(k => k !== "_debug").length === 0) igInsights = null
             } catch (e) {
                 console.error("[v0] IG fetch error:", e)
             }
