@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
                         { cache: "no-store" }
                     ),
                     fetch(
-                        `https://graph.instagram.com/v24.0/me/insights?metric=impressions,reach,profile_views,accounts_engaged,likes,comments,shares,saves,replies&metric_type=total_value&period=last_30_days&access_token=${user.access_token}`,
+                        `https://graph.instagram.com/v24.0/me/insights?metric=impressions,reach,profile_views,accounts_engaged,likes,comments,shares,saves&metric_type=total_value&period=last_30_days&access_token=${user.access_token}`,
                         { cache: "no-store" }
                     ),
                 ])
@@ -73,8 +73,13 @@ export async function GET(request: NextRequest) {
                             igInsights[m.name] = m.total_value?.value ?? 0
                         }
                     }
+                } else {
+                    const errBody = await insightsRes.text()
+                    console.error("[v0] Insights API error:", insightsRes.status, errBody)
                 }
-            } catch {}
+            } catch (e) {
+                console.error("[v0] IG fetch error:", e)
+            }
         }
 
         const results = await Promise.all([automationsQuery, activeQuery, audienceQuery, sentQuery, recentQuery])

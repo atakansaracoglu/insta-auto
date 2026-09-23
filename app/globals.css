@@ -3,6 +3,16 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@keyframes fade-out {
+  0% { opacity: 1; transform: translateY(0); }
+  70% { opacity: 1; transform: translateY(-2px); }
+  100% { opacity: 0; transform: translateY(-6px); }
+}
+
+@utility animate-fade-out {
+  animation: fade-out 2s ease-out forwards;
+}
+
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;

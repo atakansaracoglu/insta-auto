@@ -100,11 +100,10 @@ export default function DashboardPage() {
             <AnimatedMetric label="Yorum" value={insights.comments ?? 0} icon={MessageCircle} />
             <AnimatedMetric label="Paylaşım" value={insights.shares ?? 0} icon={Share2} />
           </div>
-          <div className="mt-4 grid sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="mt-4 grid sm:grid-cols-3 gap-4">
             <AnimatedMetric label="Kaydetme" value={insights.saves ?? 0} icon={Bookmark} />
             <AnimatedMetric label="Profil ziyareti" value={insights.profile_views ?? 0} icon={UserCheck} />
             <AnimatedMetric label="Etkileşim" value={insights.accounts_engaged ?? 0} icon={Heart} />
-            <AnimatedMetric label="Yanıt" value={insights.replies ?? 0} icon={MessageSquare} />
           </div>
         </section>
       )}
@@ -140,12 +139,15 @@ export default function DashboardPage() {
 function AnimatedMetric({ label, value, icon: Icon }: { label: string; value: number; icon: React.ComponentType<{ className?: string }> }) {
   const [display, setDisplay] = useState(value)
   const prev = useRef(value)
+  const [arrow, setArrow] = useState<"up" | "down" | null>(null)
 
   useEffect(() => {
     const from = prev.current
     prev.current = value
     if (from === value) { setDisplay(value); return }
     const diff = value - from
+    setArrow(diff > 0 ? "up" : "down")
+    const hideTimer = setTimeout(() => setArrow(null), 2000)
     const steps = Math.min(Math.abs(diff), 30)
     const stepTime = 600 / steps
     let i = 0
@@ -154,7 +156,7 @@ function AnimatedMetric({ label, value, icon: Icon }: { label: string; value: nu
       setDisplay(Math.round(from + (diff * i) / steps))
       if (i >= steps) clearInterval(id)
     }, stepTime)
-    return () => clearInterval(id)
+    return () => { clearInterval(id); clearTimeout(hideTimer) }
   }, [value])
 
   return (
@@ -163,7 +165,14 @@ function AnimatedMetric({ label, value, icon: Icon }: { label: string; value: nu
         <p className="text-xs font-medium text-muted-foreground">{label}</p>
         <Icon className="size-4 text-muted-foreground" />
       </div>
-      <p className="mt-2 text-2xl font-semibold tracking-tight tabular-nums">{display.toLocaleString()}</p>
+      <div className="mt-2 flex items-center gap-1.5">
+        <p className="text-2xl font-semibold tracking-tight tabular-nums">{display.toLocaleString()}</p>
+        {arrow && (
+          <span className={`inline-flex animate-fade-out text-sm font-bold ${arrow === "up" ? "text-emerald-500" : "text-red-500"}`}>
+            {arrow === "up" ? "↑" : "↓"}
+          </span>
+        )}
+      </div>
     </div>
   )
 }
