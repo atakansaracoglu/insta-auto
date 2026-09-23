@@ -284,7 +284,7 @@ function RuleCard({ rule, onDelete, onEdit, onToggle, onDuplicate, index, isSpec
             )}
             {content.check_follow && (
                 <Badge variant="secondary" className="bg-secondary text-secondary-foreground border border-border text-[10px] px-1.5 py-0">
-                <Lock className="w-2.5 h-2.5 mr-0.5" /> Follow
+                <Lock className="w-2.5 h-2.5 mr-0.5" /> Takip
               </Badge>
             )}
             {isPaused && (

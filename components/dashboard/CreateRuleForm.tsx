@@ -690,8 +690,8 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
 
               <div className="space-y-4">
                 <FieldLabel>Delivery options</FieldLabel>
-                <ToggleRow icon={<Lock className="w-5 h-5" />} title="Follow gate required" sub="Only followers get the payload. Non-followers get follow prompt first." on={checkFollow} onToggle={() => setCheckFollow(!checkFollow)} />
-                <ToggleRow icon={<Eye className="w-5 h-5" />} title="Mimic active typing status" sub="Displays typing bubble indicators to look completely organic." on={typingIndicator} onToggle={() => setTypingIndicator(!typingIndicator)} />
+                <ToggleRow icon={<Lock className="w-5 h-5" />} title="Takip zorunluluğu" sub="Sadece takipçiler içeriği alır. Takip etmeyenlere önce takip isteği gönderilir." on={checkFollow} onToggle={() => setCheckFollow(!checkFollow)} />
+                <ToggleRow icon={<Eye className="w-5 h-5" />} title="Yazıyor göstergesi" sub="Doğal görünmesi için yazıyor baloncuğunu gösterir." on={typingIndicator} onToggle={() => setTypingIndicator(!typingIndicator)} />
                 
                 <div className="flex items-center justify-between p-4 rounded-2xl border border-border bg-white/[0.01]">
                   <div className="flex items-center gap-3">
