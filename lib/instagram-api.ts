@@ -78,11 +78,11 @@ export function buildFollowGateCard(params: {
   subtitle?: string
 }): IGCard {
   return {
-    title: params.title ?? "Before you lose me",
-    subtitle: params.subtitle ?? `Follow @${params.username} to unlock this content!`,
+    title: params.title ?? "🔒 İçeriği görmek için takip et",
+    subtitle: params.subtitle ?? `Bu içeriği görebilmek için @${params.username} hesabını takip etmen gerekiyor!`,
     buttons: [
-      { type: "web_url", url: `https://instagram.com/${params.username}`, title: "Follow" },
-      { type: "postback", title: "I Followed! ✅", payload: `UNLOCK_CONTENT_${params.ruleId}` },
+      { type: "web_url", url: `https://instagram.com/${params.username}`, title: "Takip Et" },
+      { type: "postback", title: "Takip Ettim! ✅", payload: `UNLOCK_CONTENT_${params.ruleId}` },
     ],
   }
 }
