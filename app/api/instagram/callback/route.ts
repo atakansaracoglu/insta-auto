@@ -117,6 +117,18 @@ export async function POST(request: NextRequest) {
 
     if (upsertError) throw upsertError
 
+    // 7. Subscribe user to webhooks so Meta delivers events for this account
+    try {
+      const subRes = await fetch(
+        `https://graph.instagram.com/v24.0/me/subscribed_apps?subscribed_fields=comments,messages,messaging_postbacks,messaging_seen,message_reactions&access_token=${accessToken}`,
+        { method: "POST" }
+      )
+      const subData = await subRes.json()
+      console.log(`[v0] 📡 subscribed_apps response:`, JSON.stringify(subData))
+    } catch (e) {
+      console.error("[v0] subscribed_apps failed:", e)
+    }
+
     const response = NextResponse.json({ success: true, username, userId: loginUserId, profilePic })
     response.cookies.set("insta_session", JSON.stringify({ username, userId: loginUserId }), {
       path: "/",
