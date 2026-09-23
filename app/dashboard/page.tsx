@@ -96,8 +96,7 @@ export default function DashboardPage() {
         <section className="mb-6 rounded-xl border border-border bg-card p-6" aria-label="Aylık istatistikler">
           <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Son 30 gün</h2>
           <div className="grid sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            <AnimatedMetric label="Görüntülenme" value={insights.content_views ?? insights.views ?? 0} icon={Eye} />
-            {insights.reach != null && <AnimatedMetric label="Erişim" value={insights.reach} icon={Users} />}
+            <AnimatedMetric label="Görüntülenme" value={(insights.reach ?? 0) + (insights.views ?? 0)} icon={Eye} />
             {insights.total_interactions != null && <AnimatedMetric label="Etkileşim" value={insights.total_interactions} icon={Heart} />}
             {insights.likes != null && <AnimatedMetric label="Beğeni" value={insights.likes} icon={Heart} />}
             {insights.comments != null && <AnimatedMetric label="Yorum" value={insights.comments} icon={MessageCircle} />}
