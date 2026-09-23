@@ -63,30 +63,44 @@ export default function DashboardPage() {
   const insights = stats?.igInsights
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 py-7 sm:px-8 lg:px-10">
-      <header className="flex flex-col justify-between gap-5 border-b border-border pb-7 sm:flex-row sm:items-end">
-        <div><p className="text-sm text-muted-foreground">Welcome back, {username || "creator"}</p><h1 className="mt-1 text-3xl font-semibold tracking-[-0.03em]">Your workspace</h1></div>
+      {/* Header with profile picture */}
+      <header className="flex flex-col justify-between gap-5 pb-7 sm:flex-row sm:items-end">
+        <div className="flex items-center gap-4">
+          {ig?.profilePicture && (
+            <img src={ig.profilePicture} alt={ig.username} className="size-14 rounded-full border-2 border-border object-cover" />
+          )}
+          <div>
+            <p className="text-sm text-muted-foreground">Hoş geldin, {ig?.name || username || "creator"}</p>
+            <h1 className="mt-1 text-3xl font-semibold tracking-[-0.03em]">{ig ? `@${ig.username}` : "Your workspace"}</h1>
+          </div>
+        </div>
         <Link href="/dashboard/automations" className="inline-flex h-10 w-fit items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"><Plus className="size-4" />Create workflow</Link>
       </header>
 
+      {/* Instagram Stats Card */}
       {ig && (
-        <section className="grid border-b border-border sm:grid-cols-3" aria-label="Instagram stats">
-          <AnimatedMetric label="Takipçi" value={ig.followersCount} icon={Users} />
-          <AnimatedMetric label="Takip" value={ig.followsCount} icon={UserPlus} />
-          <AnimatedMetric label="Gönderi" value={ig.mediaCount} icon={Image} />
+        <section className="mb-6 rounded-xl border border-border bg-card p-6" aria-label="Instagram stats">
+          <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Instagram</h2>
+          <div className="grid sm:grid-cols-3 gap-4">
+            <AnimatedMetric label="Takipçi" value={ig.followersCount} icon={Users} />
+            <AnimatedMetric label="Takip" value={ig.followsCount} icon={UserPlus} />
+            <AnimatedMetric label="Gönderi" value={ig.mediaCount} icon={Image} />
+          </div>
         </section>
       )}
 
+      {/* Monthly Insights Card */}
       {insights && (
-        <section aria-label="Aylık istatistikler">
-          <p className="mt-6 mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Son 30 gün</p>
-          <div className="grid border-b border-border sm:grid-cols-3 lg:grid-cols-5">
+        <section className="mb-6 rounded-xl border border-border bg-card p-6" aria-label="Aylık istatistikler">
+          <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Son 30 gün</h2>
+          <div className="grid sm:grid-cols-3 lg:grid-cols-5 gap-4">
             <AnimatedMetric label="Görüntülenme" value={insights.impressions ?? 0} icon={Eye} />
             <AnimatedMetric label="Erişim" value={insights.reach ?? 0} icon={Users} />
             <AnimatedMetric label="Beğeni" value={insights.likes ?? 0} icon={Heart} />
             <AnimatedMetric label="Yorum" value={insights.comments ?? 0} icon={MessageCircle} />
             <AnimatedMetric label="Paylaşım" value={insights.shares ?? 0} icon={Share2} />
           </div>
-          <div className="grid border-b border-border sm:grid-cols-3 lg:grid-cols-4">
+          <div className="mt-4 grid sm:grid-cols-3 lg:grid-cols-4 gap-4">
             <AnimatedMetric label="Kaydetme" value={insights.saves ?? 0} icon={Bookmark} />
             <AnimatedMetric label="Profil ziyareti" value={insights.profile_views ?? 0} icon={UserCheck} />
             <AnimatedMetric label="Etkileşim" value={insights.accounts_engaged ?? 0} icon={Heart} />
@@ -95,14 +109,18 @@ export default function DashboardPage() {
         </section>
       )}
 
-      <section className="grid border-b border-border sm:grid-cols-2 lg:grid-cols-4" aria-label="Account summary">
-        <Metric label="Workflows" value={metrics?.totalAutomations ?? 0} icon={Workflow} />
-        <Metric label="Active triggers" value={metrics?.activeTriggers ?? 0} icon={CheckCircle2} />
-        <Metric label="Messages sent" value={metrics?.messagesSent ?? 0} icon={MessageSquare} />
-        <Metric label="People reached" value={metrics?.audienceReached ?? 0} icon={Users} />
+      {/* Automation Metrics Card */}
+      <section className="mb-6 rounded-xl border border-border bg-card p-6" aria-label="Otomasyon özeti">
+        <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Otomasyon</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Metric label="Workflows" value={metrics?.totalAutomations ?? 0} icon={Workflow} />
+          <Metric label="Active triggers" value={metrics?.activeTriggers ?? 0} icon={CheckCircle2} />
+          <Metric label="Messages sent" value={metrics?.messagesSent ?? 0} icon={MessageSquare} />
+          <Metric label="People reached" value={metrics?.audienceReached ?? 0} icon={Users} />
+        </div>
       </section>
 
-      <div className="grid gap-6 py-7 lg:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.8fr)]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.8fr)]">
         <section className="overflow-hidden rounded-xl border border-border bg-card">
           <div className="flex items-center justify-between border-b border-border px-5 py-4"><div><h2 className="text-sm font-semibold">Recent conversations</h2><p className="mt-1 text-xs text-muted-foreground">Latest replies sent by your workflows</p></div><Link href="/dashboard/inbox" className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground">View all<ArrowRight className="size-3.5" /></Link></div>
           <div className="divide-y divide-border">
@@ -140,18 +158,26 @@ function AnimatedMetric({ label, value, icon: Icon }: { label: string; value: nu
   }, [value])
 
   return (
-    <div className="border-border py-6 sm:border-r sm:px-6 first:pl-0 last:border-r-0">
+    <div className="rounded-lg bg-secondary/50 px-4 py-3">
       <div className="flex items-center justify-between">
         <p className="text-xs font-medium text-muted-foreground">{label}</p>
         <Icon className="size-4 text-muted-foreground" />
       </div>
-      <p className="mt-3 text-3xl font-semibold tracking-tight tabular-nums">{display.toLocaleString()}</p>
+      <p className="mt-2 text-2xl font-semibold tracking-tight tabular-nums">{display.toLocaleString()}</p>
     </div>
   )
 }
 
 function Metric({ label, value, icon: Icon }: { label: string; value: number; icon: React.ComponentType<{ className?: string }> }) {
-  return <div className="border-border py-6 sm:border-r sm:px-6 first:pl-0 last:border-r-0"><div className="flex items-center justify-between"><p className="text-xs font-medium text-muted-foreground">{label}</p><Icon className="size-4 text-muted-foreground" /></div><p className="mt-3 text-3xl font-semibold tracking-tight">{value.toLocaleString()}</p></div>
+  return (
+    <div className="rounded-lg bg-secondary/50 px-4 py-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+        <Icon className="size-4 text-muted-foreground" />
+      </div>
+      <p className="mt-2 text-2xl font-semibold tracking-tight">{value.toLocaleString()}</p>
+    </div>
+  )
 }
 
 function EmptyState({ icon: Icon, title, description }: { icon: React.ComponentType<{ className?: string }>; title: string; description: string }) {
