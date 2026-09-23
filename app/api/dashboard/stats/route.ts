@@ -63,32 +63,32 @@ export async function GET(request: NextRequest) {
                 const since = new Date(Date.now() - 30 * 86400000).toISOString().split("T")[0]
                 const until = new Date().toISOString().split("T")[0]
                 const base = `https://graph.instagram.com/v24.0/me/insights`
-                const qs = `period=day&since=${since}&until=${until}&access_token=${user.access_token}`
-                const metricGroups = [
-                    "reach,profile_views,accounts_engaged",
-                    "views,total_interactions,follows_and_unfollows",
-                    "likes,comments,shares,saves",
+                const token = user.access_token
+                const calls = [
+                    // period=day metrics (support since/until)
+                    fetch(`${base}?metric=reach,profile_views,accounts_engaged&period=day&since=${since}&until=${until}&access_token=${token}`, { cache: "no-store" }),
+                    // total_value metrics (no since/until, always returns last 30 days)
+                    fetch(`${base}?metric=views,total_interactions,likes,comments,shares,saves,follows_and_unfollows&metric_type=total_value&period=days_28&access_token=${token}`, { cache: "no-store" }),
                 ]
-                const responses = await Promise.all(
-                    metricGroups.map(m => fetch(`${base}?metric=${m}&${qs}`, { cache: "no-store" }))
-                )
+                const responses = await Promise.all(calls)
                 igInsights = {} as Record<string, number>
-                const debugInfo: string[] = []
-                for (let i = 0; i < responses.length; i++) {
-                    const res = responses[i]
-                    const body = await res.text()
-                    debugInfo.push(`g${i}[${metricGroups[i]}] s=${res.status} body=${body.slice(0, 300)}`)
-                    if (res.ok) {
-                        try {
-                            const d = JSON.parse(body)
-                            for (const m of d.data ?? []) {
-                                igInsights[m.name] = (m.values ?? []).reduce((sum: number, v: any) => sum + (v.value ?? 0), 0)
-                            }
-                        } catch {}
+                // Group 0: sum daily values
+                if (responses[0].ok) {
+                    const d = await responses[0].json()
+                    for (const m of d.data ?? []) {
+                        igInsights[m.name] = (m.values ?? []).reduce((sum: number, v: any) => sum + (v.value ?? 0), 0)
                     }
                 }
-                (igInsights as any)._debug = debugInfo
-                if (Object.keys(igInsights).filter(k => k !== "_debug").length === 0) igInsights = null
+                // Group 1: total_value
+                if (responses[1].ok) {
+                    const d = await responses[1].json()
+                    for (const m of d.data ?? []) {
+                        igInsights[m.name] = m.total_value?.value ?? 0
+                    }
+                } else {
+                    console.error("[v0] Insights total_value error:", responses[1].status, await responses[1].text())
+                }
+                if (Object.keys(igInsights).length === 0) igInsights = null
             } catch (e) {
                 console.error("[v0] IG fetch error:", e)
             }
