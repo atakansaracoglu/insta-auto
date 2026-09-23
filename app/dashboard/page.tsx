@@ -91,29 +91,25 @@ export default function DashboardPage() {
       )}
 
       {/* Monthly Insights Card */}
-      <section className="mb-6 rounded-xl border border-border bg-card p-6" aria-label="Aylık istatistikler">
-        <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Son 30 gün</h2>
-        {insights ? (
-          <>
-            <div className="grid sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              {insights.views != null && <AnimatedMetric label="Görüntülenme" value={insights.views} icon={Eye} />}
-              {insights.reach != null && <AnimatedMetric label="Erişim" value={insights.reach} icon={Users} />}
-              {insights.total_interactions != null && <AnimatedMetric label="Etkileşim" value={insights.total_interactions} icon={Heart} />}
-              {insights.likes != null && <AnimatedMetric label="Beğeni" value={insights.likes} icon={Heart} />}
-              {insights.comments != null && <AnimatedMetric label="Yorum" value={insights.comments} icon={MessageCircle} />}
-            </div>
-            <div className="mt-4 grid sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              {insights.shares != null && <AnimatedMetric label="Paylaşım" value={insights.shares} icon={Share2} />}
-              {insights.saves != null && <AnimatedMetric label="Kaydetme" value={insights.saves} icon={Bookmark} />}
-              {insights.profile_views != null && <AnimatedMetric label="Profil ziyareti" value={insights.profile_views} icon={UserCheck} />}
-              {insights.accounts_engaged != null && <AnimatedMetric label="Hesap etkileşimi" value={insights.accounts_engaged} icon={Users} />}
-              {insights.follows_and_unfollows != null && <AnimatedMetric label="Takip değişimi" value={insights.follows_and_unfollows} icon={UserPlus} />}
-            </div>
-          </>
-        ) : (
-          <p className="text-sm text-muted-foreground">Yükleniyor...</p>
-        )}
-      </section>
+      {insights && (
+        <section className="mb-6 rounded-xl border border-border bg-card p-6" aria-label="Aylık istatistikler">
+          <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Son 30 gün</h2>
+          <div className="grid sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {insights.views != null && <AnimatedMetric label="Görüntülenme" value={insights.views} icon={Eye} />}
+            {insights.reach != null && <AnimatedMetric label="Erişim" value={insights.reach} icon={Users} />}
+            {insights.total_interactions != null && <AnimatedMetric label="Etkileşim" value={insights.total_interactions} icon={Heart} />}
+            {insights.likes != null && <AnimatedMetric label="Beğeni" value={insights.likes} icon={Heart} />}
+            {insights.comments != null && <AnimatedMetric label="Yorum" value={insights.comments} icon={MessageCircle} />}
+          </div>
+          <div className="mt-4 grid sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {insights.shares != null && <AnimatedMetric label="Paylaşım" value={insights.shares} icon={Share2} />}
+            {insights.saves != null && <AnimatedMetric label="Kaydetme" value={insights.saves} icon={Bookmark} />}
+            {insights.profile_views != null && <AnimatedMetric label="Profil ziyareti" value={insights.profile_views} icon={UserCheck} />}
+            {insights.accounts_engaged != null && <AnimatedMetric label="Hesap etkileşimi" value={insights.accounts_engaged} icon={Users} />}
+            {insights.follows_and_unfollows != null && <AnimatedMetric label="Takip değişimi" value={insights.follows_and_unfollows} icon={UserPlus} />}
+          </div>
+        </section>
+      )}
 
       {/* Automation Metrics Card */}
       <section className="mb-6 rounded-xl border border-border bg-card p-6" aria-label="Otomasyon özeti">
