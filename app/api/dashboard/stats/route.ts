@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
                     // period=day metrics (support since/until)
                     fetch(`${base}?metric=reach,profile_views,accounts_engaged&period=day&since=${since}&until=${until}&access_token=${token}`, { cache: "no-store" }),
                     // total_value metrics (no since/until, always returns last 30 days)
-                    fetch(`${base}?metric=views,total_interactions,likes,comments,shares,saves,follows_and_unfollows&metric_type=total_value&period=days_28&access_token=${token}`, { cache: "no-store" }),
+                    fetch(`${base}?metric=views,content_views,total_interactions,likes,comments,shares,saves,follows_and_unfollows&metric_type=total_value&period=days_28&access_token=${token}`, { cache: "no-store" }),
                 ]
                 const responses = await Promise.all(calls)
                 igInsights = {} as Record<string, number>

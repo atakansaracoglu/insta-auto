@@ -18,6 +18,7 @@ interface IgProfile {
 interface IgInsights {
   reach: number
   views: number
+  content_views: number
   profile_views: number
   accounts_engaged: number
   total_interactions: number
@@ -95,7 +96,7 @@ export default function DashboardPage() {
         <section className="mb-6 rounded-xl border border-border bg-card p-6" aria-label="Aylık istatistikler">
           <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Son 30 gün</h2>
           <div className="grid sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            {insights.views != null && <AnimatedMetric label="Görüntülenme" value={insights.views} icon={Eye} />}
+            <AnimatedMetric label="Görüntülenme" value={insights.content_views ?? insights.views ?? 0} icon={Eye} />
             {insights.reach != null && <AnimatedMetric label="Erişim" value={insights.reach} icon={Users} />}
             {insights.total_interactions != null && <AnimatedMetric label="Etkileşim" value={insights.total_interactions} icon={Heart} />}
             {insights.likes != null && <AnimatedMetric label="Beğeni" value={insights.likes} icon={Heart} />}
