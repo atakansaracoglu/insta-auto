@@ -21,7 +21,7 @@ interface DashboardStats {
   recentActivity: Array<{ id: string; content: string; created_at: string; recipient?: { recipient_username: string } }>
 }
 
-const POLL_INTERVAL = 30_000
+const POLL_INTERVAL = 10_000
 
 export default function DashboardPage() {
   const { username, userId, isLoading: sessionLoading } = useInstagramSession()
