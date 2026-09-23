@@ -64,20 +64,20 @@ export async function GET(request: NextRequest) {
                 const until = new Date().toISOString().split("T")[0]
                 const base = `https://graph.instagram.com/v24.0/me/insights`
                 const token = user.access_token
-                const dayMetrics = ["reach", "views", "profile_views", "accounts_engaged",
-                    "likes", "comments", "shares", "saves", "total_interactions", "follows_and_unfollows"]
-                const calls = dayMetrics.map(m =>
-                    fetch(`${base}?metric=${m}&period=day&since=${since}&until=${until}&access_token=${token}`, { cache: "no-store" })
-                )
-                const responses = await Promise.all(calls)
+                const [dayRes, totalRes] = await Promise.all([
+                    fetch(`${base}?metric=reach&period=day&since=${since}&until=${until}&access_token=${token}`, { cache: "no-store" }),
+                    fetch(`${base}?metric=views,total_interactions,likes,comments,shares,saves,follows_and_unfollows&metric_type=total_value&period=days_28&access_token=${token}`, { cache: "no-store" }),
+                ])
                 igInsights = {} as Record<string, number>
-                for (let i = 0; i < responses.length; i++) {
-                    if (responses[i].ok) {
-                        const d = await responses[i].json()
-                        for (const m of d.data ?? []) {
-                            igInsights[m.name] = (m.values ?? []).reduce((sum: number, v: any) => sum + (v.value ?? 0), 0)
-                        }
-                    }
+                if (dayRes.ok) {
+                    const d = await dayRes.json()
+                    for (const m of d.data ?? [])
+                        igInsights[m.name] = (m.values ?? []).reduce((sum: number, v: any) => sum + (v.value ?? 0), 0)
+                }
+                if (totalRes.ok) {
+                    const d = await totalRes.json()
+                    for (const m of d.data ?? [])
+                        igInsights[m.name] = m.total_value?.value ?? 0
                 }
                 if (Object.keys(igInsights).length === 0) igInsights = null
             } catch (e) {
