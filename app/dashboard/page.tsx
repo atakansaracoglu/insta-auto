@@ -1,38 +1,66 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import Link from "next/link"
-import { ArrowRight, Bot, CheckCircle2, Loader2, MessageSquare, Plus, Users, Workflow } from "lucide-react"
+import { ArrowRight, Bot, CheckCircle2, Image, Loader2, MessageSquare, Plus, UserCheck, UserPlus, Users, Workflow } from "lucide-react"
 import { useInstagramSession } from "@/hooks/use-instagram-session"
+
+interface IgProfile {
+  username: string
+  name: string
+  biography: string
+  followersCount: number
+  followsCount: number
+  mediaCount: number
+  profilePicture: string | null
+}
 
 interface DashboardStats {
   metrics: { totalAutomations: number; activeTriggers: number; audienceReached: number; messagesSent: number }
+  igProfile: IgProfile | null
   recentActivity: Array<{ id: string; content: string; created_at: string; recipient?: { recipient_username: string } }>
 }
+
+const POLL_INTERVAL = 30_000
 
 export default function DashboardPage() {
   const { username, userId, isLoading: sessionLoading } = useInstagramSession()
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const fetchStats = useCallback(() => {
     if (!userId) return
     fetch(`/api/dashboard/stats?userId=${userId}`)
-      .then(response => response.json())
+      .then(r => r.json())
       .then(data => { if (data && !data.error) setStats(data) })
-      .catch(error => console.error("Failed to load dashboard stats", error))
+      .catch(e => console.error("Failed to load dashboard stats", e))
       .finally(() => setLoading(false))
   }, [userId])
+
+  useEffect(() => {
+    fetchStats()
+    const id = setInterval(fetchStats, POLL_INTERVAL)
+    return () => clearInterval(id)
+  }, [fetchStats])
 
   if (sessionLoading || loading) return <div className="flex min-h-[60vh] items-center justify-center"><Loader2 className="size-5 animate-spin text-muted-foreground" /></div>
 
   const metrics = stats?.metrics
+  const ig = stats?.igProfile
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 py-7 sm:px-8 lg:px-10">
       <header className="flex flex-col justify-between gap-5 border-b border-border pb-7 sm:flex-row sm:items-end">
         <div><p className="text-sm text-muted-foreground">Welcome back, {username || "creator"}</p><h1 className="mt-1 text-3xl font-semibold tracking-[-0.03em]">Your workspace</h1></div>
         <Link href="/dashboard/automations" className="inline-flex h-10 w-fit items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"><Plus className="size-4" />Create workflow</Link>
       </header>
+
+      {ig && (
+        <section className="grid border-b border-border sm:grid-cols-3" aria-label="Instagram stats">
+          <AnimatedMetric label="Takipçi" value={ig.followersCount} icon={Users} />
+          <AnimatedMetric label="Takip" value={ig.followsCount} icon={UserPlus} />
+          <AnimatedMetric label="Gönderi" value={ig.mediaCount} icon={Image} />
+        </section>
+      )}
 
       <section className="grid border-b border-border sm:grid-cols-2 lg:grid-cols-4" aria-label="Account summary">
         <Metric label="Workflows" value={metrics?.totalAutomations ?? 0} icon={Workflow} />
@@ -54,6 +82,37 @@ export default function DashboardPage() {
           <section className="rounded-xl bg-primary p-5 text-primary-foreground"><h2 className="text-sm font-semibold">Build your next workflow</h2><p className="mt-2 text-xs leading-5 text-primary-foreground/75">Turn a comment, direct message, or story reply into an automatic response.</p><Link href="/dashboard/automations" className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold">Open workflow builder<ArrowRight className="size-3.5" /></Link></section>
         </aside>
       </div>
+    </div>
+  )
+}
+
+function AnimatedMetric({ label, value, icon: Icon }: { label: string; value: number; icon: React.ComponentType<{ className?: string }> }) {
+  const [display, setDisplay] = useState(value)
+  const prev = useRef(value)
+
+  useEffect(() => {
+    const from = prev.current
+    prev.current = value
+    if (from === value) { setDisplay(value); return }
+    const diff = value - from
+    const steps = Math.min(Math.abs(diff), 30)
+    const stepTime = 600 / steps
+    let i = 0
+    const id = setInterval(() => {
+      i++
+      setDisplay(Math.round(from + (diff * i) / steps))
+      if (i >= steps) clearInterval(id)
+    }, stepTime)
+    return () => clearInterval(id)
+  }, [value])
+
+  return (
+    <div className="border-border py-6 sm:border-r sm:px-6 first:pl-0 last:border-r-0">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+        <Icon className="size-4 text-muted-foreground" />
+      </div>
+      <p className="mt-3 text-3xl font-semibold tracking-tight tabular-nums">{display.toLocaleString()}</p>
     </div>
   )
 }

@@ -43,6 +43,24 @@ export async function GET(request: NextRequest) {
             .order("created_at", { ascending: false })
             .limit(5)
 
+        // 6. Fetch Instagram profile stats
+        const { data: user } = await supabase
+            .from("users")
+            .select("access_token")
+            .eq("id", userId)
+            .single()
+
+        let igProfile: any = null
+        if (user?.access_token) {
+            try {
+                const igRes = await fetch(
+                    `https://graph.instagram.com/v24.0/me?fields=username,followers_count,follows_count,media_count,profile_picture_url,biography,name&access_token=${user.access_token}`,
+                    { next: { revalidate: 300 } }
+                )
+                if (igRes.ok) igProfile = await igRes.json()
+            } catch {}
+        }
+
         const results = await Promise.all([automationsQuery, activeQuery, audienceQuery, sentQuery, recentQuery])
         const failed = results.find(result => result.error)
         if (failed?.error) throw failed.error
@@ -61,6 +79,15 @@ export async function GET(request: NextRequest) {
                 audienceReached: audienceCount || 0,
                 messagesSent: messagesSentCount || 0,
             },
+            igProfile: igProfile ? {
+                username: igProfile.username,
+                name: igProfile.name,
+                biography: igProfile.biography,
+                followersCount: igProfile.followers_count,
+                followsCount: igProfile.follows_count,
+                mediaCount: igProfile.media_count,
+                profilePicture: igProfile.profile_picture_url,
+            } : null,
             recentActivity: recentMessages || []
         })
     } catch (error) {
