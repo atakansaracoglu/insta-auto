@@ -60,29 +60,23 @@ export async function GET(request: NextRequest) {
                 )
                 if (igRes.ok) igProfile = await igRes.json()
 
-                const metricSets = [
-                    "reach,views,profile_views,accounts_engaged,total_interactions,likes,comments,shares,saves,follows_and_unfollows",
-                    "reach,views,profile_views,accounts_engaged,likes,comments,shares,saves",
-                    "reach,profile_views,accounts_engaged,likes,comments,shares,saves",
-                ]
-                for (const metrics of metricSets) {
-                    const insightsRes = await fetch(
-                        `https://graph.instagram.com/v24.0/me/insights?metric=${metrics}&metric_type=total_value&period=last_30_days&access_token=${user.access_token}`,
-                        { cache: "no-store" }
-                    )
-                    if (insightsRes.ok) {
-                        const insightsData = await insightsRes.json()
-                        if (insightsData.data) {
-                            igInsights = {} as Record<string, number>
-                            for (const m of insightsData.data) {
-                                igInsights[m.name] = m.total_value?.value ?? 0
-                            }
+                const since = new Date(Date.now() - 30 * 86400000).toISOString().split("T")[0]
+                const until = new Date().toISOString().split("T")[0]
+                const insightsRes = await fetch(
+                    `https://graph.instagram.com/v24.0/me/insights?metric=reach,views,profile_views,accounts_engaged,total_interactions,likes,comments,shares,saves,follows_and_unfollows&period=day&since=${since}&until=${until}&access_token=${user.access_token}`,
+                    { cache: "no-store" }
+                )
+                if (insightsRes.ok) {
+                    const insightsData = await insightsRes.json()
+                    if (insightsData.data) {
+                        igInsights = {} as Record<string, number>
+                        for (const m of insightsData.data) {
+                            igInsights[m.name] = (m.values ?? []).reduce((sum: number, v: any) => sum + (v.value ?? 0), 0)
                         }
-                        break
-                    } else {
-                        const errBody = await insightsRes.text()
-                        console.error(`[v0] Insights API error (${metrics.split(",").length} metrics):`, insightsRes.status, errBody)
                     }
+                } else {
+                    const errBody = await insightsRes.text()
+                    console.error("[v0] Insights API error:", insightsRes.status, errBody)
                 }
             } catch (e) {
                 console.error("[v0] IG fetch error:", e)
