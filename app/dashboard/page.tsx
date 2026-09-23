@@ -16,15 +16,16 @@ interface IgProfile {
 }
 
 interface IgInsights {
-  impressions: number
   reach: number
+  views: number
   profile_views: number
   accounts_engaged: number
+  total_interactions: number
   likes: number
   comments: number
   shares: number
   saves: number
-  replies: number
+  follows_and_unfollows: number
 }
 
 interface DashboardStats {
@@ -94,16 +95,18 @@ export default function DashboardPage() {
         <section className="mb-6 rounded-xl border border-border bg-card p-6" aria-label="Aylık istatistikler">
           <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Son 30 gün</h2>
           <div className="grid sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            <AnimatedMetric label="Görüntülenme" value={insights.impressions ?? 0} icon={Eye} />
+            <AnimatedMetric label="Görüntülenme" value={insights.views ?? 0} icon={Eye} />
             <AnimatedMetric label="Erişim" value={insights.reach ?? 0} icon={Users} />
+            <AnimatedMetric label="Etkileşim" value={insights.total_interactions ?? 0} icon={Heart} />
             <AnimatedMetric label="Beğeni" value={insights.likes ?? 0} icon={Heart} />
             <AnimatedMetric label="Yorum" value={insights.comments ?? 0} icon={MessageCircle} />
-            <AnimatedMetric label="Paylaşım" value={insights.shares ?? 0} icon={Share2} />
           </div>
-          <div className="mt-4 grid sm:grid-cols-3 gap-4">
+          <div className="mt-4 grid sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <AnimatedMetric label="Paylaşım" value={insights.shares ?? 0} icon={Share2} />
             <AnimatedMetric label="Kaydetme" value={insights.saves ?? 0} icon={Bookmark} />
             <AnimatedMetric label="Profil ziyareti" value={insights.profile_views ?? 0} icon={UserCheck} />
-            <AnimatedMetric label="Etkileşim" value={insights.accounts_engaged ?? 0} icon={Heart} />
+            <AnimatedMetric label="Hesap etkileşimi" value={insights.accounts_engaged ?? 0} icon={Users} />
+            <AnimatedMetric label="Takip değişimi" value={insights.follows_and_unfollows ?? 0} icon={UserPlus} />
           </div>
         </section>
       )}

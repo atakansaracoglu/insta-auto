@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
                         { cache: "no-store" }
                     ),
                     fetch(
-                        `https://graph.instagram.com/v24.0/me/insights?metric=impressions,reach,profile_views,accounts_engaged,likes,comments,shares,saves&metric_type=total_value&period=last_30_days&access_token=${user.access_token}`,
+                        `https://graph.instagram.com/v24.0/me/insights?metric=reach,views,profile_views,accounts_engaged,total_interactions,likes,comments,shares,saves,follows_and_unfollows&metric_type=total_value&period=last_30_days&access_token=${user.access_token}`,
                         { cache: "no-store" }
                     ),
                 ])
