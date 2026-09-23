@@ -51,13 +51,29 @@ export async function GET(request: NextRequest) {
             .single()
 
         let igProfile: any = null
+        let igInsights: any = null
         if (user?.access_token) {
             try {
-                const igRes = await fetch(
-                    `https://graph.instagram.com/v24.0/me?fields=username,followers_count,follows_count,media_count,profile_picture_url,biography,name&access_token=${user.access_token}`,
-                    { cache: "no-store" }
-                )
+                const [igRes, insightsRes] = await Promise.all([
+                    fetch(
+                        `https://graph.instagram.com/v24.0/me?fields=username,followers_count,follows_count,media_count,profile_picture_url,biography,name&access_token=${user.access_token}`,
+                        { cache: "no-store" }
+                    ),
+                    fetch(
+                        `https://graph.instagram.com/v24.0/me/insights?metric=impressions,reach,profile_views,accounts_engaged,likes,comments,shares,saves,replies&metric_type=total_value&period=last_30_days&access_token=${user.access_token}`,
+                        { cache: "no-store" }
+                    ),
+                ])
                 if (igRes.ok) igProfile = await igRes.json()
+                if (insightsRes.ok) {
+                    const insightsData = await insightsRes.json()
+                    if (insightsData.data) {
+                        igInsights = {} as Record<string, number>
+                        for (const m of insightsData.data) {
+                            igInsights[m.name] = m.total_value?.value ?? 0
+                        }
+                    }
+                }
             } catch {}
         }
 
@@ -88,6 +104,7 @@ export async function GET(request: NextRequest) {
                 mediaCount: igProfile.media_count,
                 profilePicture: igProfile.profile_picture_url,
             } : null,
+            igInsights: igInsights ?? null,
             recentActivity: recentMessages || []
         })
     } catch (error) {

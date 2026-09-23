@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react"
 import Link from "next/link"
-import { ArrowRight, Bot, CheckCircle2, Image, Loader2, MessageSquare, Plus, UserCheck, UserPlus, Users, Workflow } from "lucide-react"
+import { ArrowRight, Bot, CheckCircle2, Eye, Heart, Image, Loader2, MessageCircle, MessageSquare, Plus, Share2, Bookmark, UserCheck, UserPlus, Users, Workflow } from "lucide-react"
 import { useInstagramSession } from "@/hooks/use-instagram-session"
 
 interface IgProfile {
@@ -15,9 +15,22 @@ interface IgProfile {
   profilePicture: string | null
 }
 
+interface IgInsights {
+  impressions: number
+  reach: number
+  profile_views: number
+  accounts_engaged: number
+  likes: number
+  comments: number
+  shares: number
+  saves: number
+  replies: number
+}
+
 interface DashboardStats {
   metrics: { totalAutomations: number; activeTriggers: number; audienceReached: number; messagesSent: number }
   igProfile: IgProfile | null
+  igInsights: IgInsights | null
   recentActivity: Array<{ id: string; content: string; created_at: string; recipient?: { recipient_username: string } }>
 }
 
@@ -47,6 +60,7 @@ export default function DashboardPage() {
 
   const metrics = stats?.metrics
   const ig = stats?.igProfile
+  const insights = stats?.igInsights
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 py-7 sm:px-8 lg:px-10">
       <header className="flex flex-col justify-between gap-5 border-b border-border pb-7 sm:flex-row sm:items-end">
@@ -59,6 +73,25 @@ export default function DashboardPage() {
           <AnimatedMetric label="Takipçi" value={ig.followersCount} icon={Users} />
           <AnimatedMetric label="Takip" value={ig.followsCount} icon={UserPlus} />
           <AnimatedMetric label="Gönderi" value={ig.mediaCount} icon={Image} />
+        </section>
+      )}
+
+      {insights && (
+        <section aria-label="Aylık istatistikler">
+          <p className="mt-6 mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Son 30 gün</p>
+          <div className="grid border-b border-border sm:grid-cols-3 lg:grid-cols-5">
+            <AnimatedMetric label="Görüntülenme" value={insights.impressions ?? 0} icon={Eye} />
+            <AnimatedMetric label="Erişim" value={insights.reach ?? 0} icon={Users} />
+            <AnimatedMetric label="Beğeni" value={insights.likes ?? 0} icon={Heart} />
+            <AnimatedMetric label="Yorum" value={insights.comments ?? 0} icon={MessageCircle} />
+            <AnimatedMetric label="Paylaşım" value={insights.shares ?? 0} icon={Share2} />
+          </div>
+          <div className="grid border-b border-border sm:grid-cols-3 lg:grid-cols-4">
+            <AnimatedMetric label="Kaydetme" value={insights.saves ?? 0} icon={Bookmark} />
+            <AnimatedMetric label="Profil ziyareti" value={insights.profile_views ?? 0} icon={UserCheck} />
+            <AnimatedMetric label="Etkileşim" value={insights.accounts_engaged ?? 0} icon={Heart} />
+            <AnimatedMetric label="Yanıt" value={insights.replies ?? 0} icon={MessageSquare} />
+          </div>
         </section>
       )}
 
