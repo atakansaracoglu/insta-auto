@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
         // 6. Fetch Instagram profile stats + TikTok token
         const { data: user } = await supabase
             .from("users")
-            .select("access_token, tiktok_access_token, tiktok_open_id, tiktok_display_name, tiktok_avatar_url")
+            .select("*")
             .eq("id", userId)
             .single()
 
