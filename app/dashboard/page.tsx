@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react"
 import Link from "next/link"
-import { ArrowRight, Bot, CheckCircle2, Eye, Heart, Image, Loader2, MessageCircle, MessageSquare, Plus, Share2, Bookmark, UserCheck, UserPlus, Users, Workflow } from "lucide-react"
+import { ArrowRight, Bot, CheckCircle2, Eye, Heart, Image, Loader2, MessageCircle, MessageSquare, Play, Plus, Share2, Bookmark, UserCheck, UserPlus, Users, Video, Workflow } from "lucide-react"
 import { useInstagramSession } from "@/hooks/use-instagram-session"
 
 interface IgProfile {
@@ -29,10 +29,19 @@ interface IgInsights {
   follows_and_unfollows: number
 }
 
+interface YtStats {
+  title: string
+  thumbnail: string | null
+  subscriberCount: number
+  viewCount: number
+  videoCount: number
+}
+
 interface DashboardStats {
   metrics: { totalAutomations: number; activeTriggers: number; audienceReached: number; messagesSent: number }
   igProfile: IgProfile | null
   igInsights: IgInsights | null
+  ytStats: YtStats | null
   recentActivity: Array<{ id: string; content: string; created_at: string; recipient?: { recipient_username: string } }>
 }
 
@@ -63,6 +72,7 @@ export default function DashboardPage() {
   const metrics = stats?.metrics
   const ig = stats?.igProfile
   const insights = stats?.igInsights
+  const yt = stats?.ytStats
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 py-7 sm:px-8 lg:px-10">
       {/* Header with profile picture */}
@@ -82,22 +92,35 @@ export default function DashboardPage() {
       {/* Instagram Stats Card */}
       {ig && (
         <section className="mb-6 rounded-xl border border-border bg-card p-6" aria-label="Instagram stats">
-          <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Instagram</h2>
+          <div className="mb-4 flex items-center gap-2">
+            <span className="flex size-5 items-center justify-center rounded bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888]"><svg className="size-3 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></span>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Instagram</h2>
+          </div>
           <div className="grid sm:grid-cols-3 gap-4">
             <AnimatedMetric label="Takipçi" value={ig.followersCount} icon={Users} />
             <AnimatedMetric label="Takip" value={ig.followsCount} icon={UserPlus} />
             <AnimatedMetric label="Gönderi" value={ig.mediaCount} icon={Image} />
           </div>
+          {insights && (
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <AnimatedMetric label="Görüntülenme" value={(insights.views ?? 0) + (insights.reach ?? 0)} icon={Eye} />
+              <AnimatedMetric label="Etkileşim" value={(insights.likes ?? 0) + (insights.comments ?? 0) + (insights.shares ?? 0) + (insights.saves ?? 0) + (insights.profile_views ?? 0) + (insights.accounts_engaged ?? 0)} icon={Heart} />
+            </div>
+          )}
         </section>
       )}
 
-      {/* Monthly Insights Card */}
-      {insights && (
-        <section className="mb-6 rounded-xl border border-border bg-card p-6" aria-label="Aylık istatistikler">
-          <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Son 30 gün</h2>
-          <div className="grid grid-cols-2 gap-3">
-            <AnimatedMetric label="Görüntülenme" value={(insights.views ?? 0) + (insights.reach ?? 0)} icon={Eye} />
-            <AnimatedMetric label="Etkileşim" value={(insights.likes ?? 0) + (insights.comments ?? 0) + (insights.shares ?? 0) + (insights.saves ?? 0) + (insights.profile_views ?? 0) + (insights.accounts_engaged ?? 0)} icon={Heart} />
+      {/* YouTube Stats Card */}
+      {yt && (
+        <section className="mb-6 rounded-xl border border-border bg-card p-6" aria-label="YouTube stats">
+          <div className="mb-4 flex items-center gap-2">
+            <span className="flex size-5 items-center justify-center rounded bg-[#FF0000]"><svg className="size-3 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></span>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">YouTube</h2>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-4">
+            <AnimatedMetric label="Abone" value={yt.subscriberCount} icon={Users} />
+            <AnimatedMetric label="Görüntülenme" value={yt.viewCount} icon={Eye} />
+            <AnimatedMetric label="Video" value={yt.videoCount} icon={Video} />
           </div>
         </section>
       )}

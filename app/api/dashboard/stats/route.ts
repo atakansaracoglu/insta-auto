@@ -50,6 +50,33 @@ export async function GET(request: NextRequest) {
             .eq("id", userId)
             .single()
 
+        let ytStats: any = null
+        const ytKey = process.env.YOUTUBE_API_KEY
+        const ytChannel = process.env.YOUTUBE_CHANNEL_ID
+        if (ytKey && ytChannel) {
+            try {
+                const ytRes = await fetch(
+                    `https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id=${ytChannel}&key=${ytKey}`,
+                    { cache: "no-store" }
+                )
+                if (ytRes.ok) {
+                    const d = await ytRes.json()
+                    const ch = d.items?.[0]
+                    if (ch) {
+                        ytStats = {
+                            title: ch.snippet?.title,
+                            thumbnail: ch.snippet?.thumbnails?.medium?.url,
+                            subscriberCount: Number(ch.statistics?.subscriberCount ?? 0),
+                            viewCount: Number(ch.statistics?.viewCount ?? 0),
+                            videoCount: Number(ch.statistics?.videoCount ?? 0),
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("[v0] YT fetch error:", e)
+            }
+        }
+
         let igProfile: any = null
         let igInsights: any = null
         if (user?.access_token) {
@@ -116,6 +143,7 @@ export async function GET(request: NextRequest) {
                 profilePicture: igProfile.profile_picture_url,
             } : null,
             igInsights: igInsights ?? null,
+            ytStats: ytStats ?? null,
             recentActivity: recentMessages || []
         })
     } catch (error) {
