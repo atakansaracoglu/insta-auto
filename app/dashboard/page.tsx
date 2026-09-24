@@ -99,7 +99,7 @@ export default function DashboardPage() {
             <AnimatedMetric label="Görüntülenme" value={insights.views ?? 0} icon={Eye} />
             <AnimatedMetric label="Erişim" value={insights.reach ?? 0} icon={Users} />
             <AnimatedMetric label="Profil ziyareti" value={insights.profile_views ?? 0} icon={UserCheck} />
-            <AnimatedMetric label="Etkileşim" value={insights.total_interactions ?? 0} icon={Heart} />
+            <AnimatedMetric label="Etkileşim" value={(insights.likes ?? 0) + (insights.comments ?? 0) + (insights.shares ?? 0) + (insights.saves ?? 0)} icon={Heart} />
             <AnimatedMetric label="Beğeni" value={insights.likes ?? 0} icon={Heart} />
             <AnimatedMetric label="Yorum" value={insights.comments ?? 0} icon={MessageCircle} />
           </div>

@@ -64,9 +64,10 @@ export async function GET(request: NextRequest) {
                 const until = new Date().toISOString().split("T")[0]
                 const base = `https://graph.instagram.com/v24.0/me/insights`
                 const token = user.access_token
-                const [dayRes, totalRes] = await Promise.all([
+                const [dayRes, totalRes1, totalRes2] = await Promise.all([
                     fetch(`${base}?metric=reach&period=day&since=${since}&until=${until}&access_token=${token}`, { cache: "no-store" }),
-                    fetch(`${base}?metric=views,total_interactions,likes,comments,shares,saves,accounts_engaged,profile_views&metric_type=total_value&period=days_28&access_token=${token}`, { cache: "no-store" }),
+                    fetch(`${base}?metric=views,total_interactions,likes,comments&metric_type=total_value&period=days_28&access_token=${token}`, { cache: "no-store" }),
+                    fetch(`${base}?metric=shares,saves,accounts_engaged,profile_views&metric_type=total_value&period=days_28&access_token=${token}`, { cache: "no-store" }),
                 ])
                 igInsights = {} as Record<string, number>
                 if (dayRes.ok) {
@@ -74,10 +75,12 @@ export async function GET(request: NextRequest) {
                     for (const m of d.data ?? [])
                         igInsights[m.name] = (m.values ?? []).reduce((sum: number, v: any) => sum + (v.value ?? 0), 0)
                 }
-                if (totalRes.ok) {
-                    const d = await totalRes.json()
-                    for (const m of d.data ?? [])
-                        igInsights[m.name] = m.total_value?.value ?? 0
+                for (const res of [totalRes1, totalRes2]) {
+                    if (res.ok) {
+                        const d = await res.json()
+                        for (const m of d.data ?? [])
+                            igInsights[m.name] = m.total_value?.value ?? 0
+                    }
                 }
                 if (Object.keys(igInsights).length === 0) igInsights = null
             } catch (e) {
