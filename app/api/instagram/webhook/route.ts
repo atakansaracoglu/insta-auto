@@ -129,20 +129,55 @@ async function sendAutomationResponse(
 }
 
 // Instagram Private Reply API (comment_id recipient) only supports plain text.
-// Cards, templates, media, and quick replies are rejected. This helper tries
-// private reply first; on failure it falls back to a direct DM (id recipient).
+// Cards, templates, media, and quick replies are rejected. This helper:
+// 1. Tries text-only private reply (comment_id) — works for any commenter
+// 2. Falls back to direct DM (id) with full content — needs 24h messaging window
+// 3. Returns failure so the caller can fall back to public reply
 async function sendCommentDMWithFallback(
   token: string,
   commentId: string,
   senderId: string,
-  sendFn: (recipient: { id?: string; comment_id?: string }) => Promise<SendResult>,
+  content: any,
 ): Promise<SendResult> {
-  const result = await sendFn({ comment_id: commentId })
-  if (result.ok) return result
+  const textContent = extractTextFromContent(content)
+
+  // Step 1: Try private reply with TEXT ONLY (private reply doesn't support cards/media)
+  if (textContent) {
+    const privateResult = await sendTextDM(token, { comment_id: commentId }, textContent)
+    if (privateResult.ok) {
+      console.log(`[webhook] ✅ Private reply sent for comment ${commentId}`)
+      return privateResult
+    }
+    console.warn(
+      `[webhook] Private reply failed for comment ${commentId}: ${JSON.stringify(privateResult.error)}`,
+    )
+  }
+
+  // Step 2: Fall back to direct DM with full content (card/media/text)
+  const dmResult = await sendAutomationResponse(token, { id: senderId }, content, { skipTyping: true })
+  if (dmResult.ok) {
+    console.log(`[webhook] ✅ Direct DM sent to ${senderId} (fallback from comment ${commentId})`)
+    return dmResult
+  }
   console.warn(
-    `[webhook] Private reply failed for comment ${commentId}, retrying as direct DM to ${senderId}: ${JSON.stringify(result.error)}`,
+    `[webhook] Direct DM also failed for ${senderId}: ${JSON.stringify(dmResult.error)}`,
   )
-  return sendFn({ id: senderId })
+  return dmResult
+}
+
+function extractTextFromContent(content: any): string | null {
+  if (content.message) return content.message
+  if (content.card?.title) {
+    let text = content.card.title
+    if (content.card.subtitle) text += "\n" + content.card.subtitle
+    if (content.card.buttons?.length) {
+      for (const btn of content.card.buttons) {
+        if (btn.url) text += `\n🔗 ${btn.title}: ${btn.url}`
+      }
+    }
+    return text
+  }
+  return null
 }
 
 function responsePreviewText(content: any): string {
@@ -368,10 +403,14 @@ export async function POST(request: NextRequest) {
                           await replyToComment(user.access_token, commentId, getPublicReply())
                         }
                         if (replyMode !== "public_only") {
-                          await sendCommentDMWithFallback(
-                            user.access_token, commentId, senderId,
-                            (r) => sendAutomationResponse(user.access_token, r, content, { skipTyping: true }),
-                          )
+                          const dmResult = await sendCommentDMWithFallback(user.access_token, commentId, senderId, content)
+                          if (!dmResult.ok && replyMode === "dm_only") {
+                            const fallbackText = extractTextFromContent(content)
+                            if (fallbackText) {
+                              console.warn(`[webhook] ⚠️ DM failed, sending content as public reply for comment ${commentId}`)
+                              await replyToComment(user.access_token, commentId, fallbackText)
+                            }
+                          }
                         }
                       } else if (followResult.follows === false) {
                         console.log(`[webhook] 🔒 Comment follower gate: @${senderId} doesn't follow @${user.username}`)
@@ -379,10 +418,8 @@ export async function POST(request: NextRequest) {
                           await replyToComment(user.access_token, commentId, getPublicReply())
                         }
                         if (replyMode !== "public_only") {
-                          await sendCommentDMWithFallback(
-                            user.access_token, commentId, senderId,
-                            (r) => sendCardDM(user.access_token, r, buildFollowGateCard({ username: user.username, ruleId: match.id })),
-                          )
+                          const gateContent = { card: buildFollowGateCard({ username: user.username, ruleId: match.id }) }
+                          await sendCommentDMWithFallback(user.access_token, commentId, senderId, gateContent)
                         }
                       } else {
                         // null → unverifiable. Distinguish auth vs transient.
@@ -394,10 +431,8 @@ export async function POST(request: NextRequest) {
                             await replyToComment(user.access_token, commentId, getPublicReply())
                           }
                           if (replyMode !== "public_only") {
-                            await sendCommentDMWithFallback(
-                              user.access_token, commentId, senderId,
-                              (r) => sendCardDM(user.access_token, r, buildFollowGateCard({ username: user.username, ruleId: match.id })),
-                            )
+                            const gateContent = { card: buildFollowGateCard({ username: user.username, ruleId: match.id }) }
+                            await sendCommentDMWithFallback(user.access_token, commentId, senderId, gateContent)
                           }
                         } else {
                           // Transient failure — fail OPEN: deliver content (with public reply if allowed)
@@ -406,10 +441,14 @@ export async function POST(request: NextRequest) {
                             await replyToComment(user.access_token, commentId, getPublicReply())
                           }
                           if (replyMode !== "public_only") {
-                            await sendCommentDMWithFallback(
-                              user.access_token, commentId, senderId,
-                              (r) => sendAutomationResponse(user.access_token, r, content, { skipTyping: true }),
-                            )
+                            const dmResult = await sendCommentDMWithFallback(user.access_token, commentId, senderId, content)
+                            if (!dmResult.ok && replyMode === "dm_only") {
+                              const fallbackText = extractTextFromContent(content)
+                              if (fallbackText) {
+                                console.warn(`[webhook] ⚠️ DM failed, sending content as public reply for comment ${commentId}`)
+                                await replyToComment(user.access_token, commentId, fallbackText)
+                              }
+                            }
                           }
                         }
                       }
@@ -419,10 +458,14 @@ export async function POST(request: NextRequest) {
                         await replyToComment(user.access_token, commentId, getPublicReply())
                       }
                       if (replyMode !== "public_only") {
-                        await sendCommentDMWithFallback(
-                          user.access_token, commentId, senderId,
-                          (r) => sendAutomationResponse(user.access_token, r, content, { skipTyping: true }),
-                        )
+                        const dmResult = await sendCommentDMWithFallback(user.access_token, commentId, senderId, content)
+                        if (!dmResult.ok && replyMode === "dm_only") {
+                          const fallbackText = extractTextFromContent(content)
+                          if (fallbackText) {
+                            console.warn(`[webhook] ⚠️ DM failed, sending content as public reply for comment ${commentId}`)
+                            await replyToComment(user.access_token, commentId, fallbackText)
+                          }
+                        }
                       }
                     }
         }
