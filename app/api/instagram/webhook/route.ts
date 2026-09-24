@@ -390,81 +390,24 @@ export async function POST(request: NextRequest) {
                       return pickRandom(pool)
                     }
 
-                    // ===== FOLLOWER GATE FOR COMMENTS =====
-                    // The gate card is delivered as a *private reply* to the comment. recipient.id
-                    // alone won't open a DM with someone who has never messaged the account; private
-                    // replies to a comment need comment_id.
-                    if (content.check_follow === true) {
-                      const followResult = await verifyFollowStatus(senderId, user.access_token)
+                    // ===== COMMENT RESPONSE: DM-FIRST STRATEGY =====
+                    // Try DM first. If DM succeeds → public reply says "check DMs".
+                    // If DM fails → generic public reply (no "check DMs", no content leaked).
 
-                      if (followResult.follows === true) {
-                        console.log(`[webhook] ✅ Comment follower gate: @${senderId} follows @${user.username} — sending content`)
+                    if (replyMode === "public_only") {
+                      await replyToComment(user.access_token, commentId, getPublicReply())
+                    } else {
+                      const dmResult = await sendCommentDMWithFallback(user.access_token, commentId, senderId, content)
+
+                      if (dmResult.ok) {
+                        console.log(`[webhook] ✅ DM delivered for comment ${commentId}`)
                         if (replyMode !== "dm_only") {
                           await replyToComment(user.access_token, commentId, getPublicReply())
-                        }
-                        if (replyMode !== "public_only") {
-                          const dmResult = await sendCommentDMWithFallback(user.access_token, commentId, senderId, content)
-                          if (!dmResult.ok && replyMode === "dm_only") {
-                            const fallbackText = extractTextFromContent(content)
-                            if (fallbackText) {
-                              console.warn(`[webhook] ⚠️ DM failed, sending content as public reply for comment ${commentId}`)
-                              await replyToComment(user.access_token, commentId, fallbackText)
-                            }
-                          }
-                        }
-                      } else if (followResult.follows === false) {
-                        console.log(`[webhook] 🔒 Comment follower gate: @${senderId} doesn't follow @${user.username}`)
-                        if (replyMode !== "dm_only") {
-                          await replyToComment(user.access_token, commentId, getPublicReply())
-                        }
-                        if (replyMode !== "public_only") {
-                          const gateContent = { card: buildFollowGateCard({ username: user.username, ruleId: match.id }) }
-                          await sendCommentDMWithFallback(user.access_token, commentId, senderId, gateContent)
                         }
                       } else {
-                        // null → unverifiable. Distinguish auth vs transient.
-                        const isAuthError = followResult.error === 'auth'
-                        if (isAuthError) {
-                          // Auth/permission failure — fail CLOSED: send gate card
-                          console.warn(`[webhook] ⚠️ Comment follower gate auth failure for @${senderId}; sending gate`)
-                          if (replyMode !== "dm_only") {
-                            await replyToComment(user.access_token, commentId, getPublicReply())
-                          }
-                          if (replyMode !== "public_only") {
-                            const gateContent = { card: buildFollowGateCard({ username: user.username, ruleId: match.id }) }
-                            await sendCommentDMWithFallback(user.access_token, commentId, senderId, gateContent)
-                          }
-                        } else {
-                          // Transient failure — fail OPEN: deliver content (with public reply if allowed)
-                          console.warn(`[webhook] ⚠️ Comment follower gate transient failure for @${senderId}; failing open`)
-                          if (replyMode !== "dm_only") {
-                            await replyToComment(user.access_token, commentId, getPublicReply())
-                          }
-                          if (replyMode !== "public_only") {
-                            const dmResult = await sendCommentDMWithFallback(user.access_token, commentId, senderId, content)
-                            if (!dmResult.ok && replyMode === "dm_only") {
-                              const fallbackText = extractTextFromContent(content)
-                              if (fallbackText) {
-                                console.warn(`[webhook] ⚠️ DM failed, sending content as public reply for comment ${commentId}`)
-                                await replyToComment(user.access_token, commentId, fallbackText)
-                              }
-                            }
-                          }
-                        }
-                      }
-                    } else {
-                      // No follower check required — send normally
-                      if (replyMode !== "dm_only") {
-                        await replyToComment(user.access_token, commentId, getPublicReply())
-                      }
-                      if (replyMode !== "public_only") {
-                        const dmResult = await sendCommentDMWithFallback(user.access_token, commentId, senderId, content)
-                        if (!dmResult.ok && replyMode === "dm_only") {
-                          const fallbackText = extractTextFromContent(content)
-                          if (fallbackText) {
-                            console.warn(`[webhook] ⚠️ DM failed, sending content as public reply for comment ${commentId}`)
-                            await replyToComment(user.access_token, commentId, fallbackText)
-                          }
+                        console.warn(`[webhook] ⚠️ DM failed for comment ${commentId}`)
+                        if (replyMode !== "dm_only") {
+                          await replyToComment(user.access_token, commentId, "Teşekkürler! 🙏")
                         }
                       }
                     }
