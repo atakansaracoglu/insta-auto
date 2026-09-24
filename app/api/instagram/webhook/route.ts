@@ -128,6 +128,23 @@ async function sendAutomationResponse(
   return result
 }
 
+// Instagram Private Reply API (comment_id recipient) only supports plain text.
+// Cards, templates, media, and quick replies are rejected. This helper tries
+// private reply first; on failure it falls back to a direct DM (id recipient).
+async function sendCommentDMWithFallback(
+  token: string,
+  commentId: string,
+  senderId: string,
+  sendFn: (recipient: { id?: string; comment_id?: string }) => Promise<SendResult>,
+): Promise<SendResult> {
+  const result = await sendFn({ comment_id: commentId })
+  if (result.ok) return result
+  console.warn(
+    `[webhook] Private reply failed for comment ${commentId}, retrying as direct DM to ${senderId}: ${JSON.stringify(result.error)}`,
+  )
+  return sendFn({ id: senderId })
+}
+
 function responsePreviewText(content: any): string {
   if (content.message) return content.message
   if (content.card) return `[Card] ${content.card.title}`
@@ -351,11 +368,9 @@ export async function POST(request: NextRequest) {
                           await replyToComment(user.access_token, commentId, getPublicReply())
                         }
                         if (replyMode !== "public_only") {
-                          await sendAutomationResponse(
-                            user.access_token,
-                            { comment_id: commentId },
-                            content,
-                            { skipTyping: true },
+                          await sendCommentDMWithFallback(
+                            user.access_token, commentId, senderId,
+                            (r) => sendAutomationResponse(user.access_token, r, content, { skipTyping: true }),
                           )
                         }
                       } else if (followResult.follows === false) {
@@ -364,10 +379,9 @@ export async function POST(request: NextRequest) {
                           await replyToComment(user.access_token, commentId, getPublicReply())
                         }
                         if (replyMode !== "public_only") {
-                          await sendCardDM(
-                            user.access_token,
-                            { comment_id: commentId },
-                            buildFollowGateCard({ username: user.username, ruleId: match.id }),
+                          await sendCommentDMWithFallback(
+                            user.access_token, commentId, senderId,
+                            (r) => sendCardDM(user.access_token, r, buildFollowGateCard({ username: user.username, ruleId: match.id })),
                           )
                         }
                       } else {
@@ -380,10 +394,9 @@ export async function POST(request: NextRequest) {
                             await replyToComment(user.access_token, commentId, getPublicReply())
                           }
                           if (replyMode !== "public_only") {
-                            await sendCardDM(
-                              user.access_token,
-                              { comment_id: commentId },
-                              buildFollowGateCard({ username: user.username, ruleId: match.id }),
+                            await sendCommentDMWithFallback(
+                              user.access_token, commentId, senderId,
+                              (r) => sendCardDM(user.access_token, r, buildFollowGateCard({ username: user.username, ruleId: match.id })),
                             )
                           }
                         } else {
@@ -393,11 +406,9 @@ export async function POST(request: NextRequest) {
                             await replyToComment(user.access_token, commentId, getPublicReply())
                           }
                           if (replyMode !== "public_only") {
-                            await sendAutomationResponse(
-                              user.access_token,
-                              { comment_id: commentId },
-                              content,
-                              { skipTyping: true },
+                            await sendCommentDMWithFallback(
+                              user.access_token, commentId, senderId,
+                              (r) => sendAutomationResponse(user.access_token, r, content, { skipTyping: true }),
                             )
                           }
                         }
@@ -408,11 +419,9 @@ export async function POST(request: NextRequest) {
                         await replyToComment(user.access_token, commentId, getPublicReply())
                       }
                       if (replyMode !== "public_only") {
-                        await sendAutomationResponse(
-                          user.access_token,
-                          { comment_id: commentId },
-                          content,
-                          { skipTyping: true },
+                        await sendCommentDMWithFallback(
+                          user.access_token, commentId, senderId,
+                          (r) => sendAutomationResponse(user.access_token, r, content, { skipTyping: true }),
                         )
                       }
                     }

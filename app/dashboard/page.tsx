@@ -37,11 +37,21 @@ interface YtStats {
   videoCount: number
 }
 
+interface TikTokStats {
+  displayName: string
+  avatarUrl: string
+  followerCount: number
+  followingCount: number
+  videoCount: number
+  likesCount: number
+}
+
 interface DashboardStats {
   metrics: { totalAutomations: number; activeTriggers: number; audienceReached: number; messagesSent: number }
   igProfile: IgProfile | null
   igInsights: IgInsights | null
   ytStats: YtStats | null
+  tiktokStats: TikTokStats | null
   recentActivity: Array<{ id: string; content: string; created_at: string; recipient?: { recipient_username: string } }>
 }
 
@@ -73,6 +83,7 @@ export default function DashboardPage() {
   const ig = stats?.igProfile
   const insights = stats?.igInsights
   const yt = stats?.ytStats
+  const tt = stats?.tiktokStats
   return (
     <div className="mx-auto w-full max-w-[1440px] px-5 py-7 sm:px-8 lg:px-10">
       {/* Header with profile picture */}
@@ -121,15 +132,24 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* TikTok — placeholder */}
+        {/* TikTok */}
         <div className="rounded-xl border border-border bg-card p-5">
           <div className="mb-4 flex items-center gap-2">
             <span className="flex size-5 items-center justify-center rounded bg-black dark:bg-white"><svg className="size-3 text-white dark:text-black" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V8.98a8.18 8.18 0 004.76 1.52V7.05a4.84 4.84 0 01-1-.36z"/></svg></span>
             <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">TikTok</h2>
           </div>
-          <div className="flex min-h-[140px] items-center justify-center">
-            <p className="text-xs text-muted-foreground">Yakında</p>
-          </div>
+          {tt ? (
+            <div className="space-y-3">
+              <AnimatedMetric label="Takipçi" value={tt.followerCount} icon={Users} />
+              <AnimatedMetric label="Beğeni" value={tt.likesCount} icon={Heart} />
+              <AnimatedMetric label="Video" value={tt.videoCount} icon={Video} />
+            </div>
+          ) : (
+            <div className="flex min-h-[140px] flex-col items-center justify-center gap-3">
+              <p className="text-xs text-muted-foreground">TikTok hesabını bağla</p>
+              <a href="/api/tiktok/connect" className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-secondary px-3 text-xs font-medium hover:bg-secondary/80">Bağla</a>
+            </div>
+          )}
         </div>
       </section>
 
