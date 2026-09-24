@@ -76,7 +76,7 @@ export default function DashboardPage() {
             <h1 className="mt-1 text-3xl font-semibold tracking-[-0.03em]">{ig ? `@${ig.username}` : "Your workspace"}</h1>
           </div>
         </div>
-        <Link href="/dashboard/automations" className="inline-flex h-10 w-fit items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"><Plus className="size-4" />Create workflow</Link>
+        <Link href="/dashboard/automations" className="inline-flex h-10 w-fit items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"><Plus className="size-4" />Otomasyon oluştur</Link>
       </header>
 
       {/* Instagram Stats Card */}
@@ -106,24 +106,24 @@ export default function DashboardPage() {
       <section className="mb-6 rounded-xl border border-border bg-card p-6" aria-label="Otomasyon özeti">
         <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Otomasyon</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Metric label="Workflows" value={metrics?.totalAutomations ?? 0} icon={Workflow} />
-          <Metric label="Active triggers" value={metrics?.activeTriggers ?? 0} icon={CheckCircle2} />
-          <Metric label="Messages sent" value={metrics?.messagesSent ?? 0} icon={MessageSquare} />
-          <Metric label="People reached" value={metrics?.audienceReached ?? 0} icon={Users} />
+          <Metric label="Otomasyonlar" value={metrics?.totalAutomations ?? 0} icon={Workflow} />
+          <Metric label="Aktif tetikleyiciler" value={metrics?.activeTriggers ?? 0} icon={CheckCircle2} />
+          <Metric label="Gönderilen mesaj" value={metrics?.messagesSent ?? 0} icon={MessageSquare} />
+          <Metric label="Ulaşılan kişi" value={metrics?.audienceReached ?? 0} icon={Users} />
         </div>
       </section>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.8fr)]">
         <section className="overflow-hidden rounded-xl border border-border bg-card">
-          <div className="flex items-center justify-between border-b border-border px-5 py-4"><div><h2 className="text-sm font-semibold">Recent conversations</h2><p className="mt-1 text-xs text-muted-foreground">Latest replies sent by your workflows</p></div><Link href="/dashboard/inbox" className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground">View all<ArrowRight className="size-3.5" /></Link></div>
+          <div className="flex items-center justify-between border-b border-border px-5 py-4"><div><h2 className="text-sm font-semibold">Son konuşmalar</h2><p className="mt-1 text-xs text-muted-foreground">Otomasyonların gönderdiği son yanıtlar</p></div><Link href="/dashboard/inbox" className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground">Tümünü gör<ArrowRight className="size-3.5" /></Link></div>
           <div className="divide-y divide-border">
-            {stats?.recentActivity?.length ? stats.recentActivity.slice(0, 6).map(message => <div key={message.id} className="flex items-center gap-3 px-5 py-4"><span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary"><MessageSquare className="size-4" /></span><div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">@{message.recipient?.recipient_username || "instagram_user"}</p><p className="mt-1 truncate text-xs text-muted-foreground">{message.content}</p></div><time className="text-xs text-muted-foreground">{new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</time></div>) : <EmptyState icon={MessageSquare} title="No conversations yet" description="New automated replies will appear here." />}
+            {stats?.recentActivity?.length ? stats.recentActivity.slice(0, 6).map(message => <div key={message.id} className="flex items-center gap-3 px-5 py-4"><span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary"><MessageSquare className="size-4" /></span><div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">@{message.recipient?.recipient_username || "instagram_user"}</p><p className="mt-1 truncate text-xs text-muted-foreground">{message.content}</p></div><time className="text-xs text-muted-foreground">{new Date(message.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</time></div>) : <EmptyState icon={MessageSquare} title="Henüz konuşma yok" description="Yeni otomatik yanıtlar burada görünecek." />}
           </div>
         </section>
 
         <aside className="space-y-6">
-          <section className="rounded-xl border border-border bg-card p-5"><div className="flex items-center gap-3"><span className="flex size-9 items-center justify-center rounded-lg bg-secondary"><Bot className="size-4" /></span><div><h2 className="text-sm font-semibold">Automation status</h2><p className="mt-0.5 text-xs text-muted-foreground">Your workspace is connected</p></div></div><dl className="mt-5 space-y-3 border-t border-border pt-4 text-sm"><div className="flex justify-between"><dt className="text-muted-foreground">Instagram</dt><dd className="flex items-center gap-1.5 font-medium"><span className="size-1.5 rounded-full bg-foreground" />Connected</dd></div><div className="flex justify-between"><dt className="text-muted-foreground">Running workflows</dt><dd className="font-medium">{metrics?.activeTriggers ?? 0}</dd></div></dl></section>
-          <section className="rounded-xl bg-primary p-5 text-primary-foreground"><h2 className="text-sm font-semibold">Build your next workflow</h2><p className="mt-2 text-xs leading-5 text-primary-foreground/75">Turn a comment, direct message, or story reply into an automatic response.</p><Link href="/dashboard/automations" className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold">Open workflow builder<ArrowRight className="size-3.5" /></Link></section>
+          <section className="rounded-xl border border-border bg-card p-5"><div className="flex items-center gap-3"><span className="flex size-9 items-center justify-center rounded-lg bg-secondary"><Bot className="size-4" /></span><div><h2 className="text-sm font-semibold">Otomasyon durumu</h2><p className="mt-0.5 text-xs text-muted-foreground">Hesabınız bağlı</p></div></div><dl className="mt-5 space-y-3 border-t border-border pt-4 text-sm"><div className="flex justify-between"><dt className="text-muted-foreground">Instagram</dt><dd className="flex items-center gap-1.5 font-medium"><span className="size-1.5 rounded-full bg-foreground" />Bağlı</dd></div><div className="flex justify-between"><dt className="text-muted-foreground">Aktif otomasyonlar</dt><dd className="font-medium">{metrics?.activeTriggers ?? 0}</dd></div></dl></section>
+          <section className="rounded-xl bg-primary p-5 text-primary-foreground"><h2 className="text-sm font-semibold">Yeni otomasyon oluştur</h2><p className="mt-2 text-xs leading-5 text-primary-foreground/75">Yorum, DM veya hikaye yanıtlarını otomatik cevaba dönüştür.</p><Link href="/dashboard/automations" className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold">Otomasyon oluştur<ArrowRight className="size-3.5" /></Link></section>
         </aside>
       </div>
     </div>

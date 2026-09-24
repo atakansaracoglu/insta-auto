@@ -102,9 +102,9 @@ export function ChatWindow({ conversationId, recipientId, recipientName, userId,
                     <Send className="w-6 h-6 text-muted-foreground" />
                 </div>
                 <div>
-                    <h3 className="text-lg font-semibold text-foreground">Your conversations</h3>
+                    <h3 className="text-lg font-semibold text-foreground">Mesajların</h3>
                     <p className="text-muted-foreground text-sm max-w-xs mx-auto mt-2">
-                        Select a conversation from the left to start chatting live with your audience.
+                        Canlı sohbet başlatmak için soldan bir konuşma seç.
                     </p>
                 </div>
             </div>
@@ -126,7 +126,7 @@ export function ChatWindow({ conversationId, recipientId, recipientName, userId,
                         <h3 className="font-bold text-foreground text-sm truncate">@{recipientName}</h3>
                         <span className="hidden md:flex items-center gap-1.5 text-[10px] text-success">
                             <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                            Online via Instagram
+                            Instagram'da çevrimiçi
                         </span>
                     </div>
                 </div>
@@ -208,7 +208,7 @@ export function ChatWindow({ conversationId, recipientId, recipientName, userId,
                     </Button>
                     <input
                         className="flex-1 bg-muted px-3 py-2 text-sm text-foreground focus:outline-none placeholder:text-muted-foreground min-w-0"
-                        placeholder="Type a message..."
+                        placeholder="Mesaj yaz..."
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}
                         onKeyDown={(e) => {

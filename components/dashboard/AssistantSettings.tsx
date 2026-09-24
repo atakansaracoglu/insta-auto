@@ -69,11 +69,11 @@ export function AssistantSettings({ userId }: { userId: string }) {
     }
 
 
-return <details className="mt-6 border-t border-border pt-4"><summary className="cursor-pointer text-xs text-muted-foreground">AI assistant settings</summary><div className="mt-4 flex items-center gap-3"><button type="button" disabled={aiLoading || aiToggling} onClick={handleToggleAI} className="rounded-lg border border-border bg-card px-3 py-2 text-xs">{aiLoading ? "Loading…" : aiToggling ? "Saving…" : aiEnabled ? "AI enabled · Turn off" : "AI disabled · Turn on"}</button><button type="button" onClick={() => setShowAiContext(!showAiContext)} className="text-xs underline">Configure assistant</button></div>{showAiContext && (
+return <details className="mt-6 border-t border-border pt-4"><summary className="cursor-pointer text-xs text-muted-foreground">AI asistan ayarları</summary><div className="mt-4 flex items-center gap-3"><button type="button" disabled={aiLoading || aiToggling} onClick={handleToggleAI} className="rounded-lg border border-border bg-card px-3 py-2 text-xs">{aiLoading ? "Yükleniyor…" : aiToggling ? "Kaydediliyor…" : aiEnabled ? "AI açık · Kapat" : "AI kapalı · Aç"}</button><button type="button" onClick={() => setShowAiContext(!showAiContext)} className="text-xs underline">Asistanı yapılandır</button></div>{showAiContext && (
                     <div className="rounded-xl border border-border bg-card p-5 animate-in fade-in slide-in-from-top-2 duration-200 space-y-4">
                         <div className="flex items-center gap-2">
                             <Brain className="w-4 h-4" />
-                            <span className="text-sm font-semibold">AI assistant settings</span>
+                            <span className="text-sm font-semibold">AI asistan ayarları</span>
                         </div>
 
                         {/* API Key */}
@@ -81,7 +81,7 @@ return <details className="mt-6 border-t border-border pt-4"><summary className=
                             <div className="flex items-center justify-between">
                                 <label className="text-xs text-neutral-400 font-medium">API Key</label>
                                 {hasApiKey && !showApiKey && (
-                                    <span className="text-[10px] text-emerald-500 font-mono">● key saved</span>
+                                    <span className="text-[10px] text-emerald-500 font-mono">● anahtar kayıtlı</span>
                                 )}
                             </div>
                             {showApiKey || !hasApiKey ? (
@@ -94,7 +94,7 @@ return <details className="mt-6 border-t border-border pt-4"><summary className=
                                         className="flex-1 bg-background border border-border rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring font-mono"
                                     />
                                     {hasApiKey && (
-                                        <button onClick={() => setShowApiKey(false)} className="px-3 py-2.5 rounded-xl border border-white/10 text-neutral-500 text-xs hover:text-white transition-colors">Cancel</button>
+                                        <button onClick={() => setShowApiKey(false)} className="px-3 py-2.5 rounded-xl border border-white/10 text-neutral-500 text-xs hover:text-white transition-colors">İptal</button>
                                     )}
                                 </div>
                             ) : (
@@ -102,14 +102,14 @@ return <details className="mt-6 border-t border-border pt-4"><summary className=
                                     onClick={() => setShowApiKey(true)}
                                     className="w-full text-left px-4 py-2.5 rounded-xl border border-white/10 text-neutral-500 text-sm hover:border-white/20 hover:text-white transition-colors"
                                 >
-                                    •••••••••••••••••••• <span className="text-xs ml-2 text-neutral-600">click to replace</span>
+                                    •••••••••••••••••••• <span className="text-xs ml-2 text-neutral-600">değiştirmek için tıkla</span>
                                 </button>
                             )}
                         </div>
 
                         {/* API Base URL */}
                         <div className="space-y-1.5">
-                            <label className="text-xs text-neutral-400 font-medium">API Base URL <span className="text-neutral-600 font-normal">(optional)</span></label>
+                            <label className="text-xs text-neutral-400 font-medium">API Base URL <span className="text-neutral-600 font-normal">(isteğe bağlı)</span></label>
                             <input
                                 type="text"
                                 value={aiBaseUrl}
@@ -117,12 +117,12 @@ return <details className="mt-6 border-t border-border pt-4"><summary className=
                                 placeholder="https://api.groq.com/v1  (default) or your own endpoint"
                                 className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring font-mono"
                             />
-                            <p className="text-[11px] text-neutral-600">Any OpenAI-compatible endpoint works — Groq, OpenAI, Together, your own proxy.</p>
+                            <p className="text-[11px] text-neutral-600">OpenAI uyumlu her endpoint çalışır — Groq, OpenAI, Together, kendi proxy'n.</p>
                         </div>
 
                         {/* Model */}
                         <div className="space-y-1.5">
-                            <label className="text-xs text-neutral-400 font-medium">Model <span className="text-neutral-600 font-normal">(optional)</span></label>
+                            <label className="text-xs text-neutral-400 font-medium">Model <span className="text-neutral-600 font-normal">(isteğe bağlı)</span></label>
                             <input
                                 type="text"
                                 value={aiModel}
@@ -134,8 +134,8 @@ return <details className="mt-6 border-t border-border pt-4"><summary className=
 
                         {/* AI Personality Context */}
                         <div className="space-y-1.5">
-                            <label className="text-xs text-neutral-400 font-medium">AI Personality Context</label>
-                            <p className="text-[11px] text-neutral-600">Tell AI about your account — niche, products, tone, what to say/avoid.</p>
+                            <label className="text-xs text-neutral-400 font-medium">AI kişilik bağlamı</label>
+                            <p className="text-[11px] text-neutral-600">AI'a hesabını anlat — niş, ürünler, ton, ne söylemeli/söylememeli.</p>
                             <textarea
                                 value={aiContext}
                                 onChange={e => setAiContext(e.target.value)}
@@ -150,7 +150,7 @@ return <details className="mt-6 border-t border-border pt-4"><summary className=
                             disabled={aiContextSaving}
                             className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium disabled:opacity-50"
                         >
-                            {aiContextSaving ? 'Saving...' : aiContextSaved ? 'Saved ✓' : 'Save'}
+                            {aiContextSaving ? 'Kaydediliyor...' : aiContextSaved ? 'Kaydedildi ✓' : 'Kaydet'}
                         </button>
                     </div>
                 )}</details>

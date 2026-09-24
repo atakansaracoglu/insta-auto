@@ -27,9 +27,9 @@ interface CreateRuleFormProps {
 }
 
 const STEPS = [
-  { key: "trigger", label: "When", sub: "Choose what starts it" },
-  { key: "response", label: "Reply", sub: "Write what people receive" },
-  { key: "settings", label: "Review", sub: "Name and publish" },
+  { key: "trigger", label: "Tetikleyici", sub: "Neyin başlatacağını seç" },
+  { key: "response", label: "Yanıt", sub: "Gönderilecek mesajı yaz" },
+  { key: "settings", label: "İncele", sub: "Adlandır ve yayınla" },
 ] as const
 
 export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: CreateRuleFormProps) {
@@ -317,18 +317,18 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
             <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
               <StepHeader
                 number={1}
-                title={triggerSource === "comment" ? "Where should this workflow run?" : triggerSource === "dm" ? "Which messages should start it?" : "Which story action should start it?"}
-                description={triggerSource === "comment" ? "Choose one post, one reel, or apply it everywhere." : "Choose the simple condition that starts this workflow."}
+                title={triggerSource === "comment" ? "Bu otomasyon nerede çalışsın?" : triggerSource === "dm" ? "Hangi mesajlar başlatsın?" : "Hangi hikaye etkileşimi başlatsın?"}
+                description={triggerSource === "comment" ? "Bir gönderi, bir reel seç ya da hepsine uygula." : "Bu otomasyonu başlatacak koşulu seç."}
               />
 
               {triggerSource === "story" && (
                 <div className="space-y-3">
-                  <FieldLabel>Select Story Interaction Type</FieldLabel>
+                  <FieldLabel>Hikaye etkileşim türünü seç</FieldLabel>
                   <div className="grid grid-cols-3 gap-3">
                     {([
-                      { key: "mention" as const, icon: <AtSign className="w-5 h-5" />, label: "Mentions me", desc: "Tagged in a story" },
-                      { key: "reaction" as const, icon: <Heart className="w-5 h-5" />, label: "Reacts", desc: "Sends emoji reaction" },
-                      { key: "reply" as const, icon: <MessageSquare className="w-5 h-5" />, label: "Replies", desc: "Text reply to story" },
+                      { key: "mention" as const, icon: <AtSign className="w-5 h-5" />, label: "Beni etiketler", desc: "Hikayede etiketlenme" },
+                      { key: "reaction" as const, icon: <Heart className="w-5 h-5" />, label: "Tepki verir", desc: "Emoji tepkisi gönderir" },
+                      { key: "reply" as const, icon: <MessageSquare className="w-5 h-5" />, label: "Yanıt verir", desc: "Hikayeye metin yanıtı" },
                     ]).map(({ key, icon, label, desc }) => (
                       <button
                         key={key}
@@ -493,18 +493,18 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
             <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
               <StepHeader
                 number={2}
-                title="What should people receive?"
-                description="Choose one reply format, then write the message exactly as it should be sent."
+                title="Kişilere ne gönderilsin?"
+                description="Bir yanıt formatı seç, sonra mesajı tam gönderilmesi gerektiği gibi yaz."
               />
 
               {triggerSource === "comment" && (
                 <div className="space-y-2">
-                  <FieldLabel>Flow direction</FieldLabel>
+                  <FieldLabel>Yanıt yönü</FieldLabel>
                   <div className="grid grid-cols-3 gap-2">
                     {([
-                      { key: "both" as const, label: "Reply + DM" },
-                      { key: "public_only" as const, label: "Reply only" },
-                      { key: "dm_only" as const, label: "DM only" },
+                      { key: "both" as const, label: "Yanıt + DM" },
+                      { key: "public_only" as const, label: "Sadece yanıt" },
+                      { key: "dm_only" as const, label: "Sadece DM" },
                     ]).map(({ key, label }) => (
                       <button
                         key={key}
@@ -523,8 +523,8 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
 
               {triggerSource === "comment" && replyMode !== "dm_only" && (
                 <div className="space-y-2 bg-muted/40 p-5 rounded-2xl border border-border">
-                  <FieldLabel>Public comments rotation</FieldLabel>
-                  <p className="text-[11px] text-muted-foreground mb-3">Add multiple phrases. We rotate them dynamically to look human.</p>
+                  <FieldLabel>Herkese açık yorum rotasyonu</FieldLabel>
+                  <p className="text-[11px] text-muted-foreground mb-3">Birden fazla ifade ekle. Doğal görünmesi için otomatik döndürülür.</p>
                   <TagInput value={publicReplies} onChange={setPublicReplies} placeholder={'e.g. "Sent you a DM!", "Check your inbox!"'} />
                 </div>
               )}
@@ -532,12 +532,12 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
               {replyMode !== "public_only" && (
                 <div className="space-y-5 pt-2">
                   <div className="space-y-2">
-                    <FieldLabel>Direct Message Format</FieldLabel>
+                    <FieldLabel>DM formatı</FieldLabel>
                     <div className="grid grid-cols-3 gap-3">
                       {([
-                        { key: "text" as const, icon: <MessageCircle className="w-4.5 h-4.5" />, label: "Text Only" },
-                        { key: "card" as const, icon: <Link2 className="w-4.5 h-4.5" />, label: "Card / Link" },
-                        { key: "media" as const, icon: <ImageIcon className="w-4.5 h-4.5" />, label: "Rich Media" },
+                        { key: "text" as const, icon: <MessageCircle className="w-4.5 h-4.5" />, label: "Metin" },
+                        { key: "card" as const, icon: <Link2 className="w-4.5 h-4.5" />, label: "Kart / Link" },
+                        { key: "media" as const, icon: <ImageIcon className="w-4.5 h-4.5" />, label: "Medya" },
                       ]).map(({ key, icon, label }) => (
                         <button
                           key={key}
@@ -556,14 +556,14 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
 
                   {type === "text" && (
                     <div className="space-y-2">
-                      <FieldLabel>DM Message Text</FieldLabel>
+                      <FieldLabel>DM mesaj metni</FieldLabel>
                       <textarea
                         value={messageText}
                         onChange={(e) => setMessageText(e.target.value)}
                         rows={5}
                         maxLength={1000}
                         className="w-full bg-muted/30 border border-border rounded-2xl px-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-accent-yellow/50 transition-colors"
-                        placeholder="Type the message to send in DMs..."
+                        placeholder="DM'den gönderilecek mesajı yaz..."
                       />
                       <p className="font-mono-ui text-[10px] text-muted-foreground text-right">{messageText.length}/1000</p>
                     </div>
@@ -572,17 +572,17 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
                   {type === "card" && (
                     <div className="space-y-4">
                       <div className="space-y-3">
-                        <FieldLabel>Card configuration</FieldLabel>
-                        <TextField value={cardTitle} onChange={setCardTitle} placeholder="Card main title" />
-                        <TextField value={cardSubtitle} onChange={setCardSubtitle} placeholder="Subtitle description (optional)" />
-                        <TextField value={cardImage} onChange={setCardImage} placeholder="Cover image URL (optional)" />
+                        <FieldLabel>Kart ayarları</FieldLabel>
+                        <TextField value={cardTitle} onChange={setCardTitle} placeholder="Kart başlığı" />
+                        <TextField value={cardSubtitle} onChange={setCardSubtitle} placeholder="Alt başlık (isteğe bağlı)" />
+                        <TextField value={cardImage} onChange={setCardImage} placeholder="Kapak görseli URL (isteğe bağlı)" />
                       </div>
                       <div className="space-y-2.5">
                         <div className="flex items-center justify-between border-b border-border pb-2">
-                          <FieldLabel>Interactive buttons ({buttons.length}/3)</FieldLabel>
+                          <FieldLabel>Etkileşim butonları ({buttons.length}/3)</FieldLabel>
                           <button type="button" onClick={addButton} disabled={buttons.length >= 3}
                             className="font-mono-ui text-[11px] text-muted-foreground hover:text-foreground disabled:opacity-40 flex items-center gap-1 transition-colors">
-                            <Plus className="w-3 h-3" /> Add button
+                            <Plus className="w-3 h-3" /> Buton ekle
                           </button>
                         </div>
                         {buttons.map((btn) => (
@@ -591,15 +591,15 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
                               value={btn.title}
                               onChange={(e) => updateButton(btn.id, "title", e.target.value)}
                               className="h-8 text-xs flex-1 bg-transparent border-none px-2 text-foreground placeholder:text-muted-foreground focus:outline-none"
-                              placeholder="Button label"
+                              placeholder="Buton yazısı"
                             />
                             <select
                               value={btn.type}
                               onChange={(e) => updateButton(btn.id, "type", e.target.value)}
                               className="h-8 text-[11px] bg-black border border-border rounded-lg px-2 text-foreground focus:outline-none"
                             >
-                              <option value="web_url">Open Link</option>
-                              <option value="postback">Trigger Flow</option>
+                              <option value="web_url">Link aç</option>
+                              <option value="postback">Akış başlat</option>
                             </select>
                             <input
                               value={btn.type === "web_url" ? btn.url : btn.payload}
@@ -619,7 +619,7 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
                   {type === "media" && (
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <FieldLabel>Select File Type</FieldLabel>
+                        <FieldLabel>Dosya türü seç</FieldLabel>
                         <div className="grid grid-cols-3 gap-2">
                           {(["image", "video", "audio"] as const).map((m) => (
                             <button
@@ -630,23 +630,23 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
                                 mediaType === m ? "border-accent-yellow bg-accent-yellow/10 text-accent-yellow-foreground" : "border-border text-muted-foreground hover:text-foreground"
                               }`}
                             >
-                              {m === "image" ? "Photo" : m === "video" ? "Video" : "Audio"}
+                              {m === "image" ? "Fotoğraf" : m === "video" ? "Video" : "Ses"}
                             </button>
                           ))}
                         </div>
                       </div>
-                      <TextField value={mediaUrl} onChange={setMediaUrl} placeholder="Link to public media file (e.g. mp4, jpg)" />
-                      <TextField value={messageText} onChange={setMessageText} placeholder="Optional caption message to send after..." />
+                      <TextField value={mediaUrl} onChange={setMediaUrl} placeholder="Herkese açık medya linki (ör. mp4, jpg)" />
+                      <TextField value={messageText} onChange={setMessageText} placeholder="Sonrasında gönderilecek mesaj (isteğe bağlı)..." />
                     </div>
                   )}
 
                   {type !== "card" && (
                     <div className="space-y-3 pt-2">
                       <div className="flex items-center justify-between border-b border-border pb-2">
-                        <FieldLabel>Quick Reply chips ({quickReplies.length}/4)</FieldLabel>
+                        <FieldLabel>Hızlı yanıt butonları ({quickReplies.length}/4)</FieldLabel>
                         <button type="button" onClick={addQuickReply} disabled={quickReplies.length >= 4}
                           className="font-mono-ui text-[11px] text-muted-foreground hover:text-foreground disabled:opacity-40 flex items-center gap-1 transition-colors">
-                          <Plus className="w-3 h-3" /> Add chip
+                          <Plus className="w-3 h-3" /> Ekle
                         </button>
                       </div>
                       {quickReplies.length > 0 && (
@@ -679,17 +679,17 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
             <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
               <StepHeader
                 number={3}
-                title="Review and publish"
-                description="Give the workflow a clear internal name and confirm optional delivery rules."
+                title="İncele ve yayınla"
+                description="Otomasyona açık bir isim ver ve isteğe bağlı gönderim kurallarını onayla."
               />
 
               <div className="space-y-2">
-                <FieldLabel>Workflow name</FieldLabel>
+                <FieldLabel>Otomasyon adı</FieldLabel>
                 <TextField value={name} onChange={setName} placeholder='e.g. "Send the free guide"' />
               </div>
 
               <div className="space-y-4">
-                <FieldLabel>Delivery options</FieldLabel>
+                <FieldLabel>Gönderim seçenekleri</FieldLabel>
                 <ToggleRow icon={<Lock className="w-5 h-5" />} title="Takip zorunluluğu" sub="Sadece takipçiler içeriği alır. Takip etmeyenlere önce takip isteği gönderilir." on={checkFollow} onToggle={() => setCheckFollow(!checkFollow)} />
                 <ToggleRow icon={<Eye className="w-5 h-5" />} title="Yazıyor göstergesi" sub="Doğal görünmesi için yazıyor baloncuğunu gösterir." on={typingIndicator} onToggle={() => setTypingIndicator(!typingIndicator)} />
                 
@@ -699,8 +699,8 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
                       <Timer className="w-4.5 h-4.5 text-muted-foreground" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-foreground">Randomized delivery delay</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">Waits before sending to simulate real human delays.</p>
+                      <p className="text-sm font-semibold text-foreground">Rastgele gönderim gecikmesi</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">Gerçek insan gibi görünmesi için göndermeden önce bekler.</p>
                     </div>
                   </div>
                   <select
@@ -708,11 +708,11 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
                     onChange={(e) => setDelaySeconds(Number(e.target.value))}
                     className="bg-black border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none hover:border-border transition-all cursor-pointer"
                   >
-                    <option value={0}>Send Immediately</option>
-                    <option value={3}>3s delay</option>
-                    <option value={5}>5s delay</option>
-                    <option value={10}>10s delay</option>
-                    <option value={30}>30s delay</option>
+                    <option value={0}>Hemen gönder</option>
+                    <option value={3}>3sn gecikme</option>
+                    <option value={5}>5sn gecikme</option>
+                    <option value={10}>10sn gecikme</option>
+                    <option value={30}>30sn gecikme</option>
                   </select>
                 </div>
               </div>
@@ -721,10 +721,10 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
               <div className="rounded-2xl border border-accent-yellow/15 bg-accent-yellow/[0.03] p-5 space-y-2">
                               <div className="flex items-center gap-2">
                                 <Sparkles className="w-4 h-4 text-accent-yellow-foreground" />
-                                <span className="text-xs font-mono-ui uppercase tracking-widest text-accent-yellow-foreground font-bold">Rule Logic Summary</span>
+                                <span className="text-xs font-mono-ui uppercase tracking-widest text-accent-yellow-foreground font-bold">Kural özeti</span>
                               </div>
                               <p className="text-xs text-muted-foreground leading-relaxed">
-                                When <span className="text-foreground font-semibold underline decoration-accent-yellow/40 decoration-2">{summary.who}</span>, we will <span className="text-accent-yellow-foreground font-semibold">{summary.what}</span>.
+                                <span className="text-foreground font-semibold underline decoration-accent-yellow/40 decoration-2">{summary.who}</span> olduğunda <span className="text-accent-yellow-foreground font-semibold">{summary.what}</span> yapılacak.
                               </p>
               </div>
             </div>
@@ -739,7 +739,7 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
                 className="flex items-center gap-2 h-10 px-4 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground text-xs font-medium transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
-                Back
+                Geri
               </button>
             ) : <div />}
 
@@ -751,7 +751,7 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
                 disabled={!stepValid[step]}
                 className="flex items-center gap-2 h-10 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed ml-auto"
               >
-                Continue
+                Devam
                 <ChevronRight className="w-4 h-4" />
               </button>
             ) : (
@@ -762,7 +762,7 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
                 className="flex items-center justify-center gap-2 h-10 px-5 rounded-lg bg-primary text-primary-foreground text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed ml-auto"
               >
                 {saving ? <Loader2 className="w-4.5 h-4.5 animate-spin" /> : <Zap className="w-4 h-4 stroke-[2.5]" />}
-                {saving ? "Saving..." : isEditing ? "Save workflow" : "Publish workflow"}
+                {saving ? "Kaydediliyor..." : isEditing ? "Kaydet" : "Yayınla"}
               </button>
             )}
           </div>
@@ -772,7 +772,7 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
         {step === 1 && replyMode !== "public_only" && (
           <div className="hidden lg:block sticky top-6 dark">
             <div className="text-center mb-3">
-              <span className="font-mono-ui text-[10px] uppercase tracking-[0.25em] text-neutral-400 font-bold">Interactive Preview</span>
+              <span className="font-mono-ui text-[10px] uppercase tracking-[0.25em] text-neutral-400 font-bold">Önizleme</span>
             </div>
             
             {/* iPhone Outer Frame — sized to fit the 300px right rail without overflowing */}

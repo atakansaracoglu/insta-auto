@@ -32,7 +32,7 @@ export function IceBreakersManager() {
 
     const handleAdd = () => {
         if (breakers.length >= 4) {
-            toast.error("Maximum 4 Ice Breakers allowed by Instagram")
+            toast.error("Instagram en fazla 4 sohbet başlatıcıya izin veriyor")
             return
         }
         setBreakers([...breakers, { question: "", response: "" }])
@@ -53,7 +53,7 @@ export function IceBreakersManager() {
 
         // Validation
         if (breakers.some(b => !b.question?.trim() || !b.response?.trim())) {
-            toast.error("Please fill in all fields")
+            toast.error("Lütfen tüm alanları doldurun")
             return
         }
 
@@ -66,12 +66,12 @@ export function IceBreakersManager() {
             })
             const data = await res.json()
             if (data.success) {
-                toast.success("Ice Breakers saved & synced usually!")
+                toast.success("Sohbet başlatıcılar kaydedildi ve senkronize edildi!")
             } else {
-                toast.error("Failed to save")
+                toast.error("Kaydetme başarısız")
             }
         } catch (e) {
-            toast.error("Error saving")
+            toast.error("Kaydetme hatası")
         } finally {
             setSaving(false)
         }
@@ -89,8 +89,8 @@ export function IceBreakersManager() {
             return (
                 <div className="space-y-6 max-w-2xl mx-auto">
                     <div className="text-center py-10 border border-border rounded-xl text-muted-foreground bg-card">
-                        <p className="text-sm font-medium">Not connected</p>
-                        <p className="text-xs mt-1">Connect your Instagram account to manage Ice Breakers.</p>
+                        <p className="text-sm font-medium">Bağlı değil</p>
+                        <p className="text-xs mt-1">Sohbet başlatıcıları yönetmek için Instagram hesabını bağla.</p>
                     </div>
                 </div>
             )
@@ -108,9 +108,9 @@ export function IceBreakersManager() {
         <div className="space-y-6 max-w-4xl mx-auto">
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-3xl font-semibold tracking-[-0.03em] text-foreground">Conversation starters</h2>
+                    <h2 className="text-3xl font-semibold tracking-[-0.03em] text-foreground">Sohbet başlatıcılar</h2>
                     <p className="text-muted-foreground text-sm">
-                        Questions people see when they start a chat with you.
+                        İnsanların seninle sohbet başlattığında gördüğü sorular.
                     </p>
                 </div>
                 <Button
@@ -119,7 +119,7 @@ export function IceBreakersManager() {
                     className="bg-primary text-primary-foreground hover:opacity-90 font-bold"
                 >
                     {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-                    Save & Sync
+                    Kaydet
                 </Button>
             </div>
 
@@ -129,21 +129,21 @@ export function IceBreakersManager() {
                         <div className="flex justify-between items-start gap-4">
                             <div className="flex-1 space-y-3">
                                 <div>
-                                    <label className="text-xs text-muted-foreground font-semibold uppercase">Question</label>
+                                    <label className="text-xs text-muted-foreground font-semibold uppercase">Soru</label>
                                     <Input
                                         value={item.question}
                                         onChange={e => handleChange(idx, "question", e.target.value)}
-                                        placeholder="e.g., What are your prices?"
+                                        placeholder="ör. Fiyatlarınız nedir?"
                                         className="bg-background border-input mt-1 focus-visible:ring-ring"
                                         maxLength={80}
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-xs text-muted-foreground font-semibold uppercase">Auto-Response</label>
+                                    <label className="text-xs text-muted-foreground font-semibold uppercase">Otomatik yanıt</label>
                                     <Textarea
                                         value={item.response}
                                         onChange={e => handleChange(idx, "response", e.target.value)}
-                                        placeholder="The reply users will receive..."
+                                        placeholder="Kullanıcıların alacağı yanıt..."
                                         className="bg-background border-input mt-1 focus-visible:ring-ring"
                                         rows={2}
                                     />
@@ -164,7 +164,7 @@ export function IceBreakersManager() {
 
                 {breakers.length === 0 && (
                     <div className="text-center py-10 border border-border rounded-xl text-muted-foreground bg-card">
-                        No ice breakers yet. Add one to get started!
+                        Henüz sohbet başlatıcı yok. Başlamak için bir tane ekle!
                     </div>
                 )}
 
@@ -174,7 +174,7 @@ export function IceBreakersManager() {
                         onClick={handleAdd}
                         className="w-full border-border bg-card hover:bg-accent text-muted-foreground hover:text-foreground"
                     >
-                        <Plus className="w-4 h-4 mr-2" /> Add Question
+                        <Plus className="w-4 h-4 mr-2" /> Soru ekle
                     </Button>
                 )}
             </div>
