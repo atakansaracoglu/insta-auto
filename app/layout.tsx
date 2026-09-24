@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "InstaAuto — Instagram Automation",
   description: "Auto-reply to comments, DMs, and stories with keyword triggers.",
   other: {
-    "tiktok-developers-site-verification": "870sdjVXhremvh8BLJUJYwVTysrCv13t",
+    "tiktok-developers-site-verification": "Awgo447569zzq7cvjv46svVeu9OIApOa",
   },
   icons: {
     icon: [
