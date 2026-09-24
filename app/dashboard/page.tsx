@@ -95,16 +95,9 @@ export default function DashboardPage() {
       {insights && (
         <section className="mb-6 rounded-xl border border-border bg-card p-6" aria-label="Aylık istatistikler">
           <h2 className="mb-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Son 30 gün</h2>
-          <div className="grid grid-cols-3 gap-3">
-            <AnimatedMetric label="Görüntülenme" value={insights.views ?? 0} icon={Eye} />
-            <AnimatedMetric label="Erişim" value={insights.reach ?? 0} icon={Users} />
-            <AnimatedMetric label="Profil ziyareti" value={insights.profile_views ?? 0} icon={UserCheck} />
-            <AnimatedMetric label="Etkileşim" value={(insights.likes ?? 0) + (insights.comments ?? 0) + (insights.shares ?? 0) + (insights.saves ?? 0)} icon={Heart} />
-            <AnimatedMetric label="Beğeni" value={insights.likes ?? 0} icon={Heart} />
-            <AnimatedMetric label="Yorum" value={insights.comments ?? 0} icon={MessageCircle} />
-            <AnimatedMetric label="Paylaşım" value={insights.shares ?? 0} icon={Share2} />
-            <AnimatedMetric label="Kaydetme" value={insights.saves ?? 0} icon={Bookmark} />
-            <AnimatedMetric label="Hesap etkileşimi" value={insights.accounts_engaged ?? 0} icon={Users} />
+          <div className="grid grid-cols-2 gap-3">
+            <AnimatedMetric label="Görüntülenme" value={(insights.views ?? 0) + (insights.reach ?? 0)} icon={Eye} />
+            <AnimatedMetric label="Etkileşim" value={(insights.likes ?? 0) + (insights.comments ?? 0) + (insights.shares ?? 0) + (insights.saves ?? 0) + (insights.profile_views ?? 0) + (insights.accounts_engaged ?? 0)} icon={Heart} />
           </div>
         </section>
       )}
