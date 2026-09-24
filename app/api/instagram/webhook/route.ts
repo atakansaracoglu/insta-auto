@@ -292,10 +292,15 @@ export async function POST(request: NextRequest) {
 
           const commentAutomations = automations.filter((a: any) => a.trigger_source === "comment")
 
-          // Priority: specific post reply-all → specific post keyword → global keyword
+          // Priority: specific post reply-all → global reply-all → specific post keyword → global keyword
           let match = commentAutomations.find(
             (a: any) => a.specific_media_id === mediaId && a.trigger_type === "reply_all",
           )
+          if (!match) {
+            match = commentAutomations.find(
+              (a: any) => !a.specific_media_id && a.trigger_type === "reply_all",
+            )
+          }
           if (!match) {
             match = commentAutomations.find(
               (a: any) =>
@@ -441,7 +446,8 @@ export async function POST(request: NextRequest) {
               if (a.trigger_type !== "reaction") return false
               if (a.specific_media_id && a.specific_media_id !== storyMediaId) return false
               const triggers = a.trigger_value?.split(",").map((t: string) => t.trim()) || []
-              if (triggers.length > 0 && triggers[0] !== "ALL" && triggers[0] !== "ALL_REACTIONS" && triggers[0] !== "") {
+              const first = triggers[0]?.toUpperCase()
+              if (triggers.length > 0 && first !== "ALL" && first !== "ALL_REACTIONS" && first !== "") {
                 return triggers.includes(reactionEmoji)
               }
               return true
@@ -453,11 +459,12 @@ export async function POST(request: NextRequest) {
               if (a.trigger_type !== "reply") return false
               if (a.specific_media_id && a.specific_media_id !== storyMediaId) return false
               const triggers = a.trigger_value?.split(",").map((t: string) => t.trim()) || []
+              const first = triggers[0]?.toUpperCase()
               if (
                 triggers.length > 0 &&
-                triggers[0] !== "ALL" &&
-                triggers[0] !== "ALL_MENTIONS" &&
-                triggers[0] !== ""
+                first !== "ALL" &&
+                first !== "ALL_MENTIONS" &&
+                first !== ""
               ) {
                 return keywordMatches(a.trigger_value, messageText)
               }
@@ -505,6 +512,9 @@ export async function POST(request: NextRequest) {
       if (entry.messaging) {
         for (const event of entry.messaging) {
           if (event.read || event.delivery || event.reaction || event.message?.is_echo) continue
+          // Skip story-related events — already handled in PART A.5
+          if (event.message?.reply_to?.story) continue
+          if (event.message?.attachments?.[0]?.type === "story_mention") continue
 
           const senderId = event.sender.id
           if (senderId === webhookId || senderId === user.business_account_id || senderId === user.page_id) continue

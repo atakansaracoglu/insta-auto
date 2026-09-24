@@ -150,7 +150,7 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
     setQuickReplies(quickReplies.map((q) => (q.id === id ? { ...q, title } : q)))
   const removeQuickReply = (id: string) => setQuickReplies(quickReplies.filter((q) => q.id !== id))
 
-  const needsKeywords = triggerSource === "dm" || (triggerSource === "story" && storyTriggerType !== "mention")
+  const needsKeywords = triggerSource === "dm" || (triggerSource === "story" && storyTriggerType === "reply")
 
   const whenValid = triggerSource === "comment" 
     ? hasSelectedReelOption // Comment trigger is valid once they select a specific post or global option
