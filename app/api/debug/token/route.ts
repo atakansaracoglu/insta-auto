@@ -68,5 +68,54 @@ export async function GET(request: NextRequest) {
     results.messaging_check = { error: e.message }
   }
 
+  // 4. Check webhook subscriptions
+  try {
+    const subRes = await fetch(
+      `https://graph.instagram.com/v24.0/me/subscribed_apps?access_token=${encodeURIComponent(token)}`,
+      { cache: "no-store" },
+    )
+    const subData = await subRes.json()
+    results.webhook_subscriptions = subRes.ok ? subData.data : { error: subData.error }
+  } catch (e: any) {
+    results.webhook_subscriptions = { error: e.message }
+  }
+
+  // 5. Test Private Reply capability (dry run with a known-bad comment_id)
+  const testCommentId = request.nextUrl.searchParams.get("testCommentId")
+  if (testCommentId) {
+    try {
+      const prRes = await fetch(
+        `https://graph.instagram.com/v24.0/me/messages?access_token=${encodeURIComponent(token)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            recipient: { comment_id: testCommentId },
+            message: { text: "Test private reply" },
+          }),
+          cache: "no-store",
+        },
+      )
+      const prData = await prRes.json()
+      if (prRes.ok) {
+        results.private_reply_test = { status: "SUCCESS", message_id: prData.id || prData.message_id }
+      } else {
+        const err = prData.error || {}
+        const isAccessError = err.code === 100 && err.error_subcode === 2534001
+        results.private_reply_test = {
+          status: isAccessError ? "BLOCKED_STANDARD_ACCESS" : "FAILED",
+          error_code: err.code,
+          error_subcode: err.error_subcode,
+          message: err.message,
+          diagnosis: isAccessError
+            ? "Private Reply requires Advanced Access for instagram_business_manage_messages. Apply at Meta Developer Dashboard > App Review."
+            : undefined,
+        }
+      }
+    } catch (e: any) {
+      results.private_reply_test = { status: "NETWORK_ERROR", error: e.message }
+    }
+  }
+
   return NextResponse.json(results)
 }
