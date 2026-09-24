@@ -40,10 +40,13 @@ export async function POST(request: NextRequest) {
     const supabase = await getSupabaseServerClient()
 
     // STABLE FIX: Always save to the Login ID
+    const SENTINELS = ["ALL", "ALL_COMMENTS", "ALL_MENTIONS", "ALL_REACTIONS"]
     const finalTriggerValue =
       trigger_type === "postback"
         ? `PAYLOAD_${Date.now()}_${Math.random().toString(36).substring(7)}`
-        : trigger_value.toLowerCase()
+        : SENTINELS.includes(trigger_value.toUpperCase())
+          ? trigger_value.toUpperCase()
+          : trigger_value.toLowerCase()
 
     const { data, error } = await supabase
       .from("automations")
@@ -101,7 +104,9 @@ export async function PUT(request: NextRequest) {
     const updateData: any = {
       name,
       trigger_type: trigger_type || "keyword",
-      trigger_value: trigger_value.toLowerCase(),
+      trigger_value: ["ALL", "ALL_COMMENTS", "ALL_MENTIONS", "ALL_REACTIONS"].includes(trigger_value.toUpperCase())
+        ? trigger_value.toUpperCase()
+        : trigger_value.toLowerCase(),
       response_content: content,
       specific_media_id: specific_media_id || null,
     }

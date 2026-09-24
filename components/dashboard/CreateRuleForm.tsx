@@ -150,7 +150,7 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
     setQuickReplies(quickReplies.map((q) => (q.id === id ? { ...q, title } : q)))
   const removeQuickReply = (id: string) => setQuickReplies(quickReplies.filter((q) => q.id !== id))
 
-  const needsKeywords = triggerSource === "dm" || (triggerSource === "story" && storyTriggerType !== "mention")
+  const needsKeywords = triggerSource === "dm" || (triggerSource === "story" && storyTriggerType === "reply")
 
   const whenValid = triggerSource === "comment" 
     ? hasSelectedReelOption // Comment trigger is valid once they select a specific post or global option
@@ -368,16 +368,23 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
                           setSelectedReel(null)
                           setHasSelectedReelOption(true)
                         }}
-                        className={`aspect-square rounded-xl border flex flex-col items-center justify-center p-2 sm:p-4 text-center transition-all duration-200 ${
-                                                  hasSelectedReelOption && selectedReel === null
-                                                    ? "border-accent-yellow ring-2 ring-accent-yellow/30 bg-accent-yellow/10"
-                                                    : "border-border bg-card hover:border-foreground/30 hover:bg-accent"
-                                                }`}
-                                              >
-                                                <Globe className="w-6 h-6 mb-2 text-accent-blue" />
-                                                <span className="text-xs font-bold text-foreground">All Posts & Reels</span>
-                                                <span className="text-[10px] text-muted-foreground mt-1 font-mono-ui">Global Trigger</span>
-                                              </button>
+                        className={`aspect-square rounded-xl border relative overflow-hidden flex flex-col items-center justify-center p-2 sm:p-4 text-center transition-all duration-200 ${
+                          hasSelectedReelOption && selectedReel === null
+                            ? "border-primary ring-2 ring-primary/40 bg-primary/10"
+                            : "border-border bg-card hover:border-foreground/30 hover:bg-accent"
+                        }`}
+                      >
+                        <Globe className="w-6 h-6 mb-2 text-accent-blue" />
+                        <span className="text-xs font-bold text-foreground">Tüm Gönderiler</span>
+                        <span className="text-[10px] text-muted-foreground mt-1 font-mono-ui">Global tetikleyici</span>
+                        {hasSelectedReelOption && selectedReel === null && (
+                          <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                            <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
+                              <Check className="w-4 h-4 stroke-[3]" />
+                            </div>
+                          </div>
+                        )}
+                      </button>
 
                       {reels.map((reel) => {
                         const isSelected = hasSelectedReelOption && selectedReel?.id === reel.id
@@ -390,10 +397,10 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
                               setHasSelectedReelOption(true)
                             }}
                             className={`aspect-square rounded-xl border overflow-hidden relative group text-left transition-all duration-200 bg-neutral-900 ${
-                                                        isSelected
-                                                          ? "border-accent-yellow ring-2 ring-accent-yellow/30"
-                                                          : "border-border hover:border-foreground/40"
-                                                      }`}
+                              isSelected
+                                ? "border-primary ring-2 ring-primary/40"
+                                : "border-border hover:border-foreground/40"
+                            }`}
                                                     >
                                                       {reel.image_url ? (
                                                         <img
@@ -418,8 +425,8 @@ export function CreateRuleForm({ userId, triggerSource, onSuccess, editRule }: C
 
                                                       {/* Selected Check overlay */}
                                                       {isSelected && (
-                                                        <div className="absolute inset-0 bg-accent-yellow/20 flex items-center justify-center backdrop-blur-[1px]">
-                                                          <div className="w-9 h-9 rounded-full bg-accent-yellow text-accent-yellow-foreground flex items-center justify-center shadow-lg ring-2 ring-accent-yellow-foreground">
+                                                        <div className="absolute inset-0 bg-primary/20 flex items-center justify-center backdrop-blur-[1px]">
+                                                          <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
                                                             <Check className="w-4 h-4 stroke-[3]" />
                                                           </div>
                                                         </div>
