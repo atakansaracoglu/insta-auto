@@ -8,6 +8,9 @@ import { ThemeProvider } from "@/components/theme-provider"
 export const metadata: Metadata = {
   title: "InstaAuto — Instagram Automation",
   description: "Auto-reply to comments, DMs, and stories with keyword triggers.",
+  other: {
+    "tiktok-developers-site-verification": "870sdjVXhremvh8BLJUJYwVTysrCv13t",
+  },
   icons: {
     icon: [
       {
