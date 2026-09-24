@@ -43,10 +43,10 @@ export async function GET(request: NextRequest) {
             .order("created_at", { ascending: false })
             .limit(5)
 
-        // 6. Fetch Instagram profile stats
+        // 6. Fetch Instagram profile stats + TikTok token
         const { data: user } = await supabase
             .from("users")
-            .select("access_token")
+            .select("access_token, tiktok_access_token, tiktok_open_id, tiktok_display_name, tiktok_avatar_url")
             .eq("id", userId)
             .single()
 
@@ -74,6 +74,35 @@ export async function GET(request: NextRequest) {
                 }
             } catch (e) {
                 console.error("[v0] YT fetch error:", e)
+            }
+        }
+
+        let tiktokStats: any = null
+        if (user?.tiktok_access_token) {
+            try {
+                const ttRes = await fetch(
+                    "https://open.tiktokapis.com/v2/user/info/?fields=open_id,display_name,avatar_url,follower_count,following_count,video_count,likes_count",
+                    {
+                        headers: { Authorization: `Bearer ${user.tiktok_access_token}` },
+                        cache: "no-store",
+                    },
+                )
+                if (ttRes.ok) {
+                    const d = await ttRes.json()
+                    const u = d.data?.user
+                    if (u) {
+                        tiktokStats = {
+                            displayName: u.display_name || user.tiktok_display_name || "",
+                            avatarUrl: u.avatar_url || user.tiktok_avatar_url || "",
+                            followerCount: u.follower_count ?? 0,
+                            followingCount: u.following_count ?? 0,
+                            videoCount: u.video_count ?? 0,
+                            likesCount: u.likes_count ?? 0,
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("[v0] TikTok fetch error:", e)
             }
         }
 
@@ -144,6 +173,7 @@ export async function GET(request: NextRequest) {
             } : null,
             igInsights: igInsights ?? null,
             ytStats: ytStats ?? null,
+            tiktokStats: tiktokStats ?? null,
             recentActivity: recentMessages || []
         })
     } catch (error) {

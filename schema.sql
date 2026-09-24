@@ -36,6 +36,12 @@ CREATE TABLE IF NOT EXISTS public.users (
   groq_api_key TEXT DEFAULT NULL,
   ai_base_url TEXT DEFAULT NULL,
   ai_model TEXT DEFAULT NULL,
+  tiktok_open_id TEXT DEFAULT NULL,
+  tiktok_access_token TEXT DEFAULT NULL,
+  tiktok_refresh_token TEXT DEFAULT NULL,
+  tiktok_token_expires_at TIMESTAMPTZ DEFAULT NULL,
+  tiktok_display_name TEXT DEFAULT NULL,
+  tiktok_avatar_url TEXT DEFAULT NULL,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
