@@ -128,43 +128,6 @@ async function sendAutomationResponse(
   return result
 }
 
-// Instagram Private Reply API (comment_id recipient) only supports plain text.
-// Cards, templates, media, and quick replies are rejected. This helper:
-// 1. Tries text-only private reply (comment_id) — works for any commenter
-// 2. Falls back to direct DM (id) with full content — needs 24h messaging window
-// 3. Returns failure so the caller can fall back to public reply
-async function sendCommentDMWithFallback(
-  token: string,
-  commentId: string,
-  senderId: string,
-  content: any,
-): Promise<SendResult> {
-  const textContent = extractTextFromContent(content)
-
-  // Step 1: Try private reply with TEXT ONLY (private reply doesn't support cards/media)
-  if (textContent) {
-    const privateResult = await sendTextDM(token, { comment_id: commentId }, textContent)
-    if (privateResult.ok) {
-      console.log(`[webhook] ✅ Private reply sent for comment ${commentId}`)
-      return privateResult
-    }
-    console.warn(
-      `[webhook] Private reply failed for comment ${commentId}: ${JSON.stringify(privateResult.error)}`,
-    )
-  }
-
-  // Step 2: Fall back to direct DM with full content (card/media/text)
-  const dmResult = await sendAutomationResponse(token, { id: senderId }, content, { skipTyping: true })
-  if (dmResult.ok) {
-    console.log(`[webhook] ✅ Direct DM sent to ${senderId} (fallback from comment ${commentId})`)
-    return dmResult
-  }
-  console.warn(
-    `[webhook] Direct DM also failed for ${senderId}: ${JSON.stringify(dmResult.error)}`,
-  )
-  return dmResult
-}
-
 function extractTextFromContent(content: any): string | null {
   if (content.message) return content.message
   if (content.card?.title) {
@@ -179,6 +142,23 @@ function extractTextFromContent(content: any): string | null {
   }
   return null
 }
+
+function isMetaPrivacyError(error: any): boolean {
+  if (!error) return false
+  const code = error.code || error.error_subcode
+  const msg = (error.message || error.error_user_msg || "").toLowerCase()
+  return (
+    code === 551 ||
+    code === 10 ||
+    msg.includes("message request") ||
+    msg.includes("not allow") ||
+    msg.includes("privacy") ||
+    msg.includes("outside of allowed window") ||
+    msg.includes("cannot message")
+  )
+}
+
+const processedComments = new Set<string>()
 
 function responsePreviewText(content: any): string {
   if (content.message) return content.message
@@ -390,25 +370,120 @@ export async function POST(request: NextRequest) {
                       return pickRandom(pool)
                     }
 
-                    // ===== COMMENT RESPONSE: DM-FIRST STRATEGY =====
-                    // Try DM first. If DM succeeds → public reply says "check DMs".
-                    // If DM fails → generic public reply (no "check DMs", no content leaked).
+                    // ===== COMMENT RESPONSE: PRIVATE REPLY (ManyChat-style) =====
+                    // 1. Private Reply via comment_id — NEVER recipient.id for first contact
+                    // 2. Public reply is a separate operation
+                    // 3. One private reply per comment_id (idempotency)
 
-                    if (replyMode === "public_only") {
-                      await replyToComment(user.access_token, commentId, getPublicReply())
-                    } else {
-                      const dmResult = await sendCommentDMWithFallback(user.access_token, commentId, senderId, content)
+                    if (processedComments.has(commentId)) {
+                      console.log(`[webhook] ⏭️ Comment ${commentId} already processed (duplicate webhook), skipping`)
+                      continue
+                    }
+                    processedComments.add(commentId)
 
-                      if (dmResult.ok) {
-                        console.log(`[webhook] ✅ DM delivered for comment ${commentId}`)
-                        if (replyMode !== "dm_only") {
-                          await replyToComment(user.access_token, commentId, getPublicReply())
-                        }
+                    let privateReplyStatus: "sent" | "failed_privacy" | "failed_api" | "skipped" = "skipped"
+                    let privateReplyError: any = null
+                    let privateReplyMessageId: string | undefined
+
+                    if (replyMode !== "public_only") {
+                      const { data: existingReply } = await supabase
+                        .from("messages")
+                        .select("id")
+                        .eq("user_id", user.id)
+                        .eq("content", `[private_reply:${commentId}]`)
+                        .maybeSingle()
+
+                      if (existingReply) {
+                        console.log(`[webhook] ⏭️ Private reply already sent for comment ${commentId}`)
+                        privateReplyStatus = "sent"
                       } else {
-                        console.warn(`[webhook] ⚠️ DM failed for comment ${commentId}`)
-                        if (replyMode !== "dm_only") {
-                          await replyToComment(user.access_token, commentId, "Teşekkürler! 🙏")
+                        const textContent = extractTextFromContent(content)
+                        if (textContent) {
+                          const privateResult = await sendTextDM(
+                            user.access_token,
+                            { comment_id: commentId },
+                            textContent,
+                          )
+
+                          if (privateResult.ok) {
+                            privateReplyStatus = "sent"
+                            privateReplyMessageId = privateResult.id
+                            console.log(`[webhook] ✅ Private reply sent for comment ${commentId} (msg: ${privateResult.id})`)
+
+                            try {
+                              let conv = null
+                              const { data: existing } = await supabase
+                                .from("conversations")
+                                .select("id")
+                                .eq("user_id", user.id)
+                                .eq("recipient_id", senderId)
+                                .maybeSingle()
+
+                              if (!existing) {
+                                let realUsername = `cnt_${senderId.slice(0, 5)}...`
+                                const profile = await fetchProfile(user.access_token, senderId)
+                                if (profile?.username) realUsername = profile.username
+                                const { data: newConv } = await supabase
+                                  .from("conversations")
+                                  .insert({
+                                    user_id: user.id,
+                                    recipient_id: senderId,
+                                    recipient_username: realUsername,
+                                    last_message_at: new Date().toISOString(),
+                                  })
+                                  .select("id")
+                                  .single()
+                                conv = newConv
+                              } else {
+                                conv = existing
+                              }
+
+                              if (conv) {
+                                await supabase.from("messages").insert({
+                                  id: privateReplyMessageId || `pr_${commentId}_${Date.now()}`,
+                                  conversation_id: conv.id,
+                                  user_id: user.id,
+                                  sender_id: user.business_account_id || webhookId,
+                                  sender_username: user.username || "Bot",
+                                  content: `[private_reply:${commentId}]`,
+                                  is_from_instagram: false,
+                                })
+                              }
+                            } catch (dbErr) {
+                              console.error(`[webhook] Failed to save private reply record:`, dbErr)
+                            }
+                          } else {
+                            privateReplyError = privateResult.error
+                            if (isMetaPrivacyError(privateResult.error)) {
+                              privateReplyStatus = "failed_privacy"
+                              console.warn(
+                                `[webhook] 🔒 Private reply blocked by user privacy for comment ${commentId}: ` +
+                                  `code=${privateResult.error?.code} subcode=${privateResult.error?.error_subcode} ` +
+                                  `msg="${privateResult.error?.message || privateResult.error?.error_user_msg || ""}"`,
+                              )
+                            } else {
+                              privateReplyStatus = "failed_api"
+                              console.error(
+                                `[webhook] ❌ Private reply API error for comment ${commentId}: ` +
+                                  JSON.stringify(privateResult.error),
+                              )
+                            }
+                          }
+                        } else {
+                          console.warn(`[webhook] ⚠️ No text content to send as private reply for comment ${commentId}`)
                         }
+                      }
+                    }
+
+                    if (replyMode !== "dm_only") {
+                      if (privateReplyStatus === "sent") {
+                        await replyToComment(user.access_token, commentId, getPublicReply())
+                        console.log(`[webhook] 💬 Public reply sent for comment ${commentId} (private reply OK)`)
+                      } else {
+                        await replyToComment(user.access_token, commentId, "Teşekkürler! 🙏")
+                        console.log(
+                          `[webhook] 💬 Public reply sent for comment ${commentId} (private reply ${privateReplyStatus})`,
+                        )
                       }
                     }
         }
@@ -620,6 +695,12 @@ export async function POST(request: NextRequest) {
                       match = dmAutomations.find(
                         (a) => a.trigger_type === "keyword" && keywordMatches(a.trigger_value, triggerValue),
                       )
+                      if (!match) {
+                        const commentAutomations = automations.filter((a: any) => a.trigger_source === "comment")
+                        match = commentAutomations.find(
+                          (a) => a.trigger_type === "keyword" && keywordMatches(a.trigger_value, triggerValue),
+                        )
+                      }
                     }
 
                     if (!match) {
