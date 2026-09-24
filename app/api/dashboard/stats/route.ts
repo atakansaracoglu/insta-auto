@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
                 const token = user.access_token
                 const [dayRes, totalRes] = await Promise.all([
                     fetch(`${base}?metric=reach&period=day&since=${since}&until=${until}&access_token=${token}`, { cache: "no-store" }),
-                    fetch(`${base}?metric=views,total_interactions,likes,comments,shares,saves,follows_and_unfollows&metric_type=total_value&period=days_28&access_token=${token}`, { cache: "no-store" }),
+                    fetch(`${base}?metric=views,total_interactions,likes,comments,shares,saves,accounts_engaged,profile_views&metric_type=total_value&period=days_28&access_token=${token}`, { cache: "no-store" }),
                 ])
                 igInsights = {} as Record<string, number>
                 if (dayRes.ok) {
