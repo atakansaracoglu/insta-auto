@@ -143,19 +143,28 @@ function extractTextFromContent(content: any): string | null {
   return null
 }
 
-function isMetaPrivacyError(error: any): boolean {
-  if (!error) return false
-  const code = error.code || error.error_subcode
+function classifyMetaError(error: any): "privacy" | "access" | "api" {
+  if (!error) return "api"
+  const code = error.code
+  const subcode = error.error_subcode
   const msg = (error.message || error.error_user_msg || "").toLowerCase()
-  return (
-    code === 551 ||
-    code === 10 ||
+
+  // Error 100/2534001: "thread does not exist" — Standard Access cannot
+  // create private-reply threads with users who have no role on the app.
+  // This is the expected error when Advanced Access is not granted.
+  if (code === 100 && subcode === 2534001) return "access"
+
+  // User privacy / messaging window restrictions
+  if (code === 551 || code === 10) return "privacy"
+  if (
     msg.includes("message request") ||
     msg.includes("not allow") ||
     msg.includes("privacy") ||
     msg.includes("outside of allowed window") ||
     msg.includes("cannot message")
-  )
+  ) return "privacy"
+
+  return "api"
 }
 
 const processedComments = new Set<string>()
@@ -454,7 +463,16 @@ export async function POST(request: NextRequest) {
                             }
                           } else {
                             privateReplyError = privateResult.error
-                            if (isMetaPrivacyError(privateResult.error)) {
+                            const errorClass = classifyMetaError(privateResult.error)
+                            if (errorClass === "access") {
+                              privateReplyStatus = "failed_api"
+                              console.error(
+                                `[webhook] 🚫 Private reply BLOCKED (Standard Access) for comment ${commentId}: ` +
+                                  `code=${privateResult.error?.code} subcode=${privateResult.error?.error_subcode}. ` +
+                                  `Private Reply requires Advanced Access for instagram_business_manage_messages. ` +
+                                  `Apply at Meta Developer Dashboard > App Review > Permissions.`,
+                              )
+                            } else if (errorClass === "privacy") {
                               privateReplyStatus = "failed_privacy"
                               console.warn(
                                 `[webhook] 🔒 Private reply blocked by user privacy for comment ${commentId}: ` +
